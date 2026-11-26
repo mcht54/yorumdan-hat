@@ -1,0 +1,54 @@
+# Panel senkronu — Mac kapalıyken de (2026-11-27). 15 dakikada bir: durum deposunu çeker, panele bölüm/plan tablosunu gönderir,
+# panelden gelen iş emirlerini (duraklat/devam, içerik fikri, Düzelt) alır ve durum deposuna yazar. Kişisel veri Actions kaydına yazılmaz.
+name: panel
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+concurrency:
+  group: yorumdan-panel
+  cancel-in-progress: true
+permissions:
+  contents: read
+  actions: write          # panel "Düzelt" → günlük iş akışını yeniden tetikleyebilsin
+jobs:
+  senkron:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      YORUMDAN_SESSIZ: "1"
+      YORUMDAN_KAYNAK: "panel"
+      TZ: Europe/Istanbul
+      GITHUB_TOKEN: ${{ github.token }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      IG_PARA_ID: ${{ secrets.IG_PARA_ID }}
+      IG_PARA_API: ${{ secrets.IG_PARA_API }}
+      IG_PARA_TOKEN: ${{ secrets.IG_PARA_TOKEN }}
+      META_PARA_PAGE_ID: ${{ secrets.META_PARA_PAGE_ID }}
+      IG_KARTVIZIT_ID: ${{ secrets.IG_KARTVIZIT_ID }}
+      IG_KARTVIZIT_API: ${{ secrets.IG_KARTVIZIT_API }}
+      IG_KARTVIZIT_TOKEN: ${{ secrets.IG_KARTVIZIT_TOKEN }}
+      META_KARTVIZIT_PAGE_ID: ${{ secrets.META_KARTVIZIT_PAGE_ID }}
+      IG_WEB_ID: ${{ secrets.IG_WEB_ID }}
+      IG_WEB_API: ${{ secrets.IG_WEB_API }}
+      IG_WEB_TOKEN: ${{ secrets.IG_WEB_TOKEN }}
+      META_WEB_PAGE_ID: ${{ secrets.META_WEB_PAGE_ID }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: mcht54/yorumdan-durum
+          ssh-key: ${{ secrets.DURUM_DEPLOY_KEY }}
+          path: durum
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - name: Senkron
+        run: |
+          pip install -q requests numpy
+          printf '%s' "${{ secrets.PANEL_ANAHTARI }}" > hat/.panel_anahtari && chmod 600 hat/.panel_anahtari
+          python hat/panel.py > /dev/null 2> durum/panel-son-hata.log || echo "senkron hata verdi (ayrıntı özel durum deposunda)"
+          cd durum && git add -A && git -c user.name=yorumdan-hat -c user.email=yorumdan-hat@users.noreply.github.com commit -qm "panel senkron" || true
+          for i in 1 2 3; do git push -q && break; git pull --rebase -q || { git rebase --abort; git -c user.name=yorumdan-hat -c user.email=yorumdan-hat@users.noreply.github.com pull --no-rebase -X ours --no-edit -q; }; done

@@ -347,9 +347,18 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
             adimlar.append({"ad": "Bugünkü bölüm", "durum": "bilgi", "mesaj": "Hat şu an çalışıyor; sonuç birkaç dakika içinde tabloda."})
         else:
             import os
-            ortam = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:" + os.environ.get("PATH", "")}  # npx/ffmpeg (launchd PATH dar)
-            subprocess.Popen([sys.executable, str(KOK / "hat" / "gunluk.py"), "--hesap", tur], cwd=str(KOK), start_new_session=True, env=ortam,
-                             stdout=open(DURUM / "launchd.log", "a"), stderr=subprocess.STDOUT)
+            if os.environ.get("GITHUB_ACTIONS"):   # bulutta: günlük iş akışını yeniden tetikle (GITHUB_TOKEN, actions: write)
+                import requests
+                bic = "butce" if tur == "para" else "butce"
+                r_ = requests.post(f"https://api.github.com/repos/{os.environ.get('GITHUB_REPOSITORY')}/actions/workflows/gunluk.yml/dispatches", timeout=30,
+                                   headers={"Authorization": f"Bearer {os.environ.get('GITHUB_TOKEN', '')}", "Accept": "application/vnd.github+json"},
+                                   json={"ref": "main", "inputs": {"hesap": tur, "bicim": bic, "deneme": "false"}})
+                if r_.status_code >= 300:
+                    raise RuntimeError(f"bulut tetiklenemedi {r_.status_code}")
+            else:
+                ortam = {**os.environ, "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:" + os.environ.get("PATH", "")}  # npx/ffmpeg (launchd PATH dar)
+                subprocess.Popen([sys.executable, str(KOK / "hat" / "gunluk.py"), "--hesap", tur], cwd=str(KOK), start_new_session=True, env=ortam,
+                                 stdout=open(DURUM / "launchd.log", "a"), stderr=subprocess.STDOUT)
             gunluk(f"panel Düzelt: {tur} günlük çalışması yeniden başlatıldı")
             adimlar.append({"ad": "Bugünkü bölüm yeniden başlatıldı", "durum": "tamam",
                             "mesaj": "Günün çalışması yapılmamıştı; şimdi başladı (çift paylaşım kapısı açık). Sonuç ~15 dk içinde tabloda."})
