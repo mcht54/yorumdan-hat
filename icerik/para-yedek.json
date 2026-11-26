@@ -1,0 +1,346 @@
+[
+ {
+  "maas": 45000,
+  "kira": 20000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "evli",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 32000,
+  "kira": 13000,
+  "konut": "kira",
+  "sehir": "Ankara",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": "araba"
+ },
+ {
+  "maas": 28075,
+  "kira": 12000,
+  "konut": "kira",
+  "sehir": "Ankara",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": "",
+  "asgari": true
+ },
+ {
+  "maas": 60000,
+  "kira": null,
+  "konut": "ev_sahibi",
+  "sehir": "İzmir",
+  "hane": "evli",
+  "cocuk": 2,
+  "borc": 6000,
+  "hedef": ""
+ },
+ {
+  "maas": 28000,
+  "kira": null,
+  "konut": "aile",
+  "sehir": "Bursa",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": "ev almak"
+ },
+ {
+  "maas": 75000,
+  "kira": 25000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 38000,
+  "kira": 15000,
+  "konut": "kira",
+  "sehir": "Sakarya",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 3000,
+  "hedef": ""
+ },
+ {
+  "maas": 28075,
+  "kira": null,
+  "konut": "aile",
+  "sehir": "İzmir",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": "ehliyet",
+  "asgari": true
+ },
+ {
+  "maas": 52000,
+  "kira": 18000,
+  "konut": "kira",
+  "sehir": "Antalya",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": "düğün"
+ },
+ {
+  "maas": 26000,
+  "kira": 12000,
+  "konut": "kira",
+  "sehir": "Konya",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 2000,
+  "hedef": ""
+ },
+ {
+  "maas": 30000,
+  "kira": 11000,
+  "konut": "kira",
+  "sehir": "Eskişehir",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 65000,
+  "kira": 22000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "evli",
+  "cocuk": 2,
+  "borc": 4000,
+  "hedef": ""
+ },
+ {
+  "maas": 28075,
+  "kira": 10000,
+  "konut": "kira",
+  "sehir": "Konya",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 0,
+  "hedef": "",
+  "asgari": true
+ },
+ {
+  "maas": 42000,
+  "kira": null,
+  "konut": "aile",
+  "sehir": "Kayseri",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 90000,
+  "kira": 30000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 8000,
+  "hedef": ""
+ },
+ {
+  "maas": 35000,
+  "kira": 14000,
+  "konut": "kira",
+  "sehir": "Samsun",
+  "hane": "evli",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 48000,
+  "kira": null,
+  "konut": "ev_sahibi",
+  "sehir": "Trabzon",
+  "hane": "evli",
+  "cocuk": 2,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 28075,
+  "kira": 15000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 2000,
+  "hedef": "",
+  "asgari": true
+ },
+ {
+  "maas": 27000,
+  "kira": 10000,
+  "konut": "kira",
+  "sehir": "Malatya",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 1500,
+  "hedef": ""
+ },
+ {
+  "maas": 55000,
+  "kira": 20000,
+  "konut": "kira",
+  "sehir": "Ankara",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 33000,
+  "kira": 16000,
+  "konut": "kira",
+  "sehir": "İzmir",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 2500,
+  "hedef": ""
+ },
+ {
+  "maas": 70000,
+  "kira": null,
+  "konut": "ev_sahibi",
+  "sehir": "Bursa",
+  "hane": "evli",
+  "cocuk": 3,
+  "borc": 5000,
+  "hedef": ""
+ },
+ {
+  "maas": 40000,
+  "kira": 17000,
+  "konut": "kira",
+  "sehir": "Kocaeli",
+  "hane": "evli",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 24000,
+  "kira": 9000,
+  "konut": "kira",
+  "sehir": "Gaziantep",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 58000,
+  "kira": 24000,
+  "konut": "kira",
+  "sehir": "Antalya",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 3000,
+  "hedef": ""
+ },
+ {
+  "maas": 36000,
+  "kira": null,
+  "konut": "aile",
+  "sehir": "Denizli",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 4000,
+  "hedef": ""
+ },
+ {
+  "maas": 46000,
+  "kira": 18000,
+  "konut": "kira",
+  "sehir": "Mersin",
+  "hane": "evli",
+  "cocuk": 2,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 80000,
+  "kira": 28000,
+  "konut": "kira",
+  "sehir": "İstanbul",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 31000,
+  "kira": 12500,
+  "konut": "kira",
+  "sehir": "Adana",
+  "hane": "evli",
+  "cocuk": 1,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 62000,
+  "kira": null,
+  "konut": "ev_sahibi",
+  "sehir": "Sakarya",
+  "hane": "evli",
+  "cocuk": 2,
+  "borc": 7000,
+  "hedef": ""
+ },
+ {
+  "maas": 29000,
+  "kira": 14500,
+  "konut": "kira",
+  "sehir": "Tekirdağ",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 50000,
+  "kira": 21000,
+  "konut": "kira",
+  "sehir": "Muğla",
+  "hane": "evli",
+  "cocuk": 0,
+  "borc": 2000,
+  "hedef": ""
+ },
+ {
+  "maas": 44000,
+  "kira": 15000,
+  "konut": "kira",
+  "sehir": "Diyarbakır",
+  "hane": "evli",
+  "cocuk": 3,
+  "borc": 0,
+  "hedef": ""
+ },
+ {
+  "maas": 38000,
+  "kira": 13000,
+  "konut": "kira",
+  "sehir": "Balıkesir",
+  "hane": "bekar",
+  "cocuk": 0,
+  "borc": 0,
+  "hedef": ""
+ }
+]

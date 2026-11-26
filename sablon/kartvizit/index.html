@@ -1,0 +1,438 @@
+<!doctype html>
+<!--
+  Yorumdan Tasarım — KARTVİZİT bölüm şablonu (otomatik). hat/kartvizit.py doldurur:
+    SURE      toplam süre (sn)
+    KATMANLAR zamanlı HTML katmanları (kanca, firma, araç çipleri, damgalar, altyazılar, kapanış) — python üretir
+    VERI      JSON: Z (cümle başı zamanları), tasarım verisi (firma, renk, yazı tipi, perdah, monogram, karekod…)
+  3B: açık premium stüdyo (telefon-3b-pro v3 ışığı), kart dokusu zamanın saf fonksiyonu (yazma, kalem, kova, seçim kutusu).
+-->
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+    <style>
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-600.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-ext-600.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-800.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-ext-800.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-900.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-ext-900.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Klasik; font-weight: 700; src: url(assets/fonts/klasik-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Klasik; font-weight: 700; src: url(assets/fonts/klasik-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: Samimi; font-weight: 800; src: url(assets/fonts/samimi-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Samimi; font-weight: 800; src: url(assets/fonts/samimi-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: KomikSans; font-weight: 700; src: url(assets/fonts/comic-bold.ttf) format('truetype'); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #eef1f6; }
+      #root { position: relative; width: 1080px; height: 1920px; font-family: Inter, system-ui, sans-serif; color: #0c0f1a; overflow: hidden; }
+      #sahne { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      .gizli { position: absolute; left: -9999px; top: 0; }
+      .ust { position: absolute; left: 110px; top: 300px; width: 780px; }
+      .etiket { display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px; border-radius: 999px; border: 2px solid #e3122b; background: #fff; color: #e3122b;
+        box-shadow: 0 8px 24px rgba(227, 18, 43, 0.18); font-size: 28px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+      .etiket i { width: 11px; height: 11px; border-radius: 50%; background: #e3122b; display: inline-block; }
+      .etiket.dolu { background: #e3122b; color: #fff; box-shadow: 0 12px 30px rgba(227, 18, 43, 0.35); }
+      .etiket.dolu i { background: #fff; }
+      .baslik { margin-top: 18px; font-size: 76px; font-weight: 900; line-height: 1.04; color: #0c0f1a; }
+      .baslik.kucuk { font-size: 64px; white-space: nowrap; }
+      .baslik b { color: #e3122b; }
+      .cipler { margin-top: 20px; display: flex; gap: 14px; flex-wrap: wrap; }
+      .cip { padding: 12px 24px; border-radius: 999px; background: #fff; border: 1px solid rgba(15,20,40,0.08); box-shadow: 0 14px 30px rgba(15,20,40,0.12); font-size: 34px; font-weight: 800; }
+      .balon { margin-top: 22px; display: flex; gap: 22px; align-items: flex-start; padding: 30px 32px; border-radius: 34px; background: #fff; box-shadow: 0 30px 70px rgba(15, 20, 40, 0.18); border: 1px solid rgba(15, 20, 40, 0.06); }
+      .avatar { flex: none; width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #f58529, #dd2a7b 55%, #8134af); padding: 5px; }
+      .avatar span { display: flex; width: 100%; height: 100%; border-radius: 50%; background: #eceef2; border: 4px solid #fff; align-items: center; justify-content: center; font-weight: 900; font-size: 30px; color: #8a8f9c; }
+      .balon-kim { font-size: 28px; font-weight: 700; color: #8a8f9c; margin-bottom: 8px; }
+      .balon-metin { font-size: 46px; font-weight: 800; line-height: 1.16; color: #0c0f1a; }
+      .kalp { flex: none; margin-top: 4px; font-size: 30px; color: #e3122b; font-weight: 800; text-align: center; line-height: 1.1; }
+      .kalp b { display: block; font-size: 44px; }
+      .arac { position: absolute; left: 110px; top: 330px; display: inline-flex; align-items: center; gap: 18px; padding: 18px 28px; border-radius: 22px;
+        background: rgba(255, 255, 255, 0.96); border: 1px solid rgba(15, 20, 40, 0.08); box-shadow: 0 22px 50px rgba(15, 20, 40, 0.16); font-size: 34px; font-weight: 800; white-space: nowrap; color: #0c0f1a; }
+      .arac small { font-size: 28px; font-weight: 600; color: #8a8f9c; letter-spacing: 0.06em; text-transform: uppercase; }
+      .ok { width: 40px; height: 40px; border-radius: 12px; background: #e3122b; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; }
+      .komik { font-family: KomikSans, Inter, sans-serif; color: #c2187a; }
+      .renkler { display: flex; gap: 18px; position: relative; }
+      .renkler i { width: 58px; height: 58px; border-radius: 50%; display: block; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+      .halka { position: absolute; left: -7px; top: -7px; width: 72px; height: 72px; border-radius: 50%; border: 4px solid #0c0f1a; }
+      .damga { position: absolute; z-index: 8; left: 140px; top: 720px; width: 720px; text-align: center; padding: 18px 10px; border: 10px solid #e3122b; border-radius: 20px;
+        background: rgba(255, 255, 255, 0.9); color: #e3122b; font-size: 92px; font-weight: 900; letter-spacing: 0.03em; }
+      .yazi { position: absolute; left: 140px; top: 1490px; width: 720px; display: flex; justify-content: center; }
+      .yazi span { display: inline-block; padding: 10px 24px; border-radius: 16px; background: rgba(12, 15, 26, 0.78); color: #fff; font-size: 38px; font-weight: 700; line-height: 1.2; text-align: center; box-shadow: 0 8px 22px rgba(12, 15, 26, 0.18); }
+      .yazi .ks { font-weight: 700; color: rgba(255, 255, 255, 0.6); }
+      .not { margin-top: 12px; font-size: 30px; font-weight: 600; color: #5b6170; }
+      #cta-panel { position: absolute; left: 0; top: 1000px; width: 1080px; height: 920px; border-radius: 64px 64px 0 0; background: linear-gradient(180deg, #e3122b 0%, #a3001a 100%); box-shadow: 0 -30px 80px rgba(163, 0, 26, 0.35); }
+      #yorum-kutu { position: absolute; left: 110px; top: 1060px; width: 780px; display: flex; align-items: center; gap: 20px; padding: 22px 26px; border-radius: 999px; background: #fff; box-shadow: 0 24px 50px rgba(60, 0, 10, 0.35); }
+      #yorum-kutu .av { flex: none; width: 64px; height: 64px; border-radius: 50%; background: #d9dce3; }
+      #yorum-yazi { font-size: 40px; font-weight: 800; color: #0c0f1a; white-space: nowrap; overflow: hidden; }
+      #imlec { display: inline-block; width: 4px; height: 44px; background: #e3122b; margin-left: 4px; vertical-align: middle; }
+      #okb { margin-left: auto; flex: none; width: 66px; height: 66px; border-radius: 50%; background: #e3122b; color: #fff; font-size: 40px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+      #cta-not { position: absolute; left: 110px; top: 1186px; width: 780px; text-align: center; font-size: 38px; font-weight: 600; color: #ffe3e6; }
+      #cta-not b { color: #fff; font-weight: 900; }
+      #cta-logo { position: absolute; left: 330px; top: 1300px; width: 420px; height: auto; }
+      .kalp2 { position: absolute; font-size: 70px; color: #ff2e45; text-shadow: 0 0 0 #fff, 0 3px 0 #fff, 0 -3px 0 #fff, 3px 0 0 #fff, -3px 0 0 #fff, 0 10px 24px rgba(120,0,20,0.35); }
+      #flas { position: absolute; inset: 0; background: #fff; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{SURE}}" data-width="1080" data-height="1920">
+      <img id="logo-tb" class="gizli" src="assets/logo-tam-beyaz.png" alt="" />
+      <canvas id="sahne" class="clip" width="1080" height="1920" data-start="0" data-duration="{{SURE}}" data-track-index="0"></canvas>
+      <div id="ust-golge" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="1" style="position:absolute;left:0;top:0;width:1080px;height:520px;background:linear-gradient(180deg,rgba(244,246,250,0.85) 0%,rgba(244,246,250,0.45) 60%,rgba(244,246,250,0) 100%)"></div>
+{{KATMANLAR}}
+      <div id="flas" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="30"></div>
+    </div>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var V = {{VERI}};
+        var Z = V.Z, W = 1080, H = 1920;
+        var FONT = { modern: "900 X Inter", klasik: "700 X Klasik", guclu: "800 X Guclu", samimi: "800 X Samimi" }[V.font_stil] || "900 X Inter";
+        function fnt(px) { return FONT.replace("X", px + "px"); }
+        var P = V.perdah, KT0 = 0.034, KT = P === "cift" ? 0.088 : KT0, KW = 3.4, KD = 2.2;
+        var RAD0 = 0.05, RAD = P === "oval" ? 0.36 : RAD0;
+        function kar(a, b, u) { var o = {}; for (var k in a) o[k] = a[k] + (b[k] - a[k]) * u; return o; }
+        function io(u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+        function cik(u) { return 1 - Math.pow(1 - u, 3); }
+        function sn(u) { return Math.max(0, Math.min(1, u)); }
+        function aral(t, a, b) { return sn((t - a) / (b - a)); }
+
+        // ---------- dokular ----------
+        var TW = 1700, TH = 1100;
+        function tuval() { var c = document.createElement("canvas"); c.width = TW; c.height = TH; return c; }
+        var onC = tuval(), arC = tuval(), maskC = tuval(), onX = onC.getContext("2d"), arX = arC.getContext("2d"), mX = maskC.getContext("2d");
+        var kagit = tuval(), kx = kagit.getContext("2d"), tohum = 11;
+        function rnd() { tohum = (tohum * 16807) % 2147483647; return tohum / 2147483647; }
+        for (var i = 0; i < 26000; i++) { kx.fillStyle = "rgba(0,0,0," + (rnd() * 0.035).toFixed(3) + ")"; kx.fillRect(rnd() * TW, rnd() * TH, 2, 2); }
+        var kraft = tuval(), krx = kraft.getContext("2d"); krx.fillStyle = "#c39a6b"; krx.fillRect(0, 0, TW, TH); tohum = 5;
+        for (i = 0; i < 9000; i++) { krx.strokeStyle = "rgba(" + (rnd() < 0.5 ? "90,60,30," : "240,220,190,") + (0.05 + rnd() * 0.12).toFixed(3) + ")"; krx.lineWidth = 1 + rnd() * 2; var fx = rnd() * TW, fy = rnd() * TH; krx.beginPath(); krx.moveTo(fx, fy); krx.lineTo(fx + (rnd() - 0.5) * 40, fy + (rnd() - 0.5) * 10); krx.stroke(); }
+        function zemin(x, renk) { x.globalAlpha = 1; x.fillStyle = renk; x.fillRect(0, 0, TW, TH); x.drawImage(kagit, 0, 0); }
+        var R = V.renk, ANA = R.ana, VUR = R.vurgu, YAZ = R.yazi;
+        var anaZemin = P === "kraft" ? null : ANA;
+
+        function imlec(x, cx, cy, kalem) {
+          x.save(); x.translate(cx, cy); x.scale(1.6, 1.6); x.lineJoin = "round";
+          if (kalem) { x.rotate(-0.75); x.fillStyle = "#1b1d24"; x.strokeStyle = "#fff"; x.lineWidth = 6;
+            x.beginPath(); x.moveTo(0, 0); x.lineTo(16, -26); x.lineTo(16, -120); x.lineTo(-16, -120); x.lineTo(-16, -26); x.closePath(); x.fill(); x.stroke(); x.fillStyle = "#d0021b"; x.fillRect(-16, -120, 32, 26); }
+          else { x.fillStyle = "#14161c"; x.strokeStyle = "#fff"; x.lineWidth = 7;
+            x.beginPath(); x.moveTo(0, 0); x.lineTo(0, 92); x.lineTo(24, 70); x.lineTo(42, 108); x.lineTo(58, 100); x.lineTo(40, 64); x.lineTo(72, 62); x.closePath(); x.stroke(); x.fill(); }
+          x.restore();
+        }
+        function secim(x, X, Y, w, h) {
+          x.save(); x.strokeStyle = "#2f80ff"; x.lineWidth = 5; x.strokeRect(X, Y, w, h);
+          [[X, Y], [X + w / 2, Y], [X + w, Y], [X, Y + h / 2], [X + w, Y + h / 2], [X, Y + h], [X + w / 2, Y + h], [X + w, Y + h]].forEach(function (p) { x.fillStyle = "#fff"; x.fillRect(p[0] - 12, p[1] - 12, 24, 24); x.strokeRect(p[0] - 12, p[1] - 12, 24, 24); });
+          x.restore();
+        }
+        function yaz(x, metin, n, X, Y, hiza, caret, t) {
+          var s = metin.slice(0, Math.max(0, Math.min(metin.length, n)));
+          x.textAlign = hiza; x.fillText(s, X, Y);
+          if (caret && Math.floor(t * 3) % 2 === 0) {
+            var w = x.measureText(s).width, fs = parseInt(x.font.match(/(\d+)px/)[1], 10);
+            var cx = hiza === "center" ? X - x.measureText(metin).width / 2 + w : X + w;
+            var e = x.fillStyle; x.fillStyle = "#2f80ff"; x.fillRect(cx + 6, Y - fs * 0.8, 6, fs * 0.95); x.fillStyle = e;
+          }
+        }
+        function daire(x, cx, cy, r, ciz) { x.save(); x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.clip(); ciz(); x.restore(); }
+        function sigdir(x, metin, tavan, gen) { var px = tavan; x.font = fnt(px); while (px > 40 && x.measureText(metin).width > gen) { px -= 4; x.font = fnt(px); } return px; }
+        // ---------- tasarım düzeni: her bölümde farklı kompozisyon (V.duzen) ----------
+        var DZ = V.duzen || "yatay";
+        function parlak(h) { h = String(h || "#000").replace("#", ""); if (h.length === 3) h = h.split("").map(function (c) { return c + c; }).join(""); var r = parseInt(h.substr(0, 2), 16), g = parseInt(h.substr(2, 2), 16), b = parseInt(h.substr(4, 2), 16); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; }
+        function zit(h) { return parlak(h) > 0.62 ? "#14161c" : "#ffffff"; }
+        function yuvarlak(x, X, Y, w, h, r) { x.beginPath(); x.moveTo(X + r, Y); x.lineTo(X + w - r, Y); x.quadraticCurveTo(X + w, Y, X + w, Y + r); x.lineTo(X + w, Y + h - r); x.quadraticCurveTo(X + w, Y + h, X + w - r, Y + h); x.lineTo(X + r, Y + h); x.quadraticCurveTo(X, Y + h, X, Y + h - r); x.lineTo(X, Y + r); x.quadraticCurveTo(X, Y, X + r, Y); x.closePath(); }
+        // x0: kalemle çizim başlangıcı, ky: kalem yüksekliği, sec: seçim kutusu, sl: slogan [x, y, hiza]
+        var DUZEN = {
+          yatay:   { x0: 260, ky: 530, sec: [120, 270, 1460, 420], sl: [564, 610, "left"] },
+          merkez:  { x0: 150, ky: 600, sec: [130, 150, 1440, 620], sl: [850, 740, "center"] },
+          panel:   { x0: 0,   ky: 560, sec: [40, 320, 1620, 400],  sl: [694, 650, "left"] },
+          dev:     { x0: 110, ky: 880, sec: [100, 160, 1580, 840], sl: [134, 965, "left"] },
+          minimal: { x0: 110, ky: 840, sec: [100, 110, 1320, 860], sl: [134, 935, "left"] },
+          kose:    { x0: 110, ky: 620, sec: [100, 190, 1260, 560], sl: [134, 715, "left"] }
+        };
+        var DL = DUZEN[DZ] || DUZEN.yatay; if (!DUZEN[DZ]) DZ = "yatay";
+        var LOGO = { mx: 330, my: 470, mr: 175, nx: 560, ny: 500, sy: 610 };
+        function logoCiz(x, p, renkYazi, renkVurgu, maske, olcek, susVar) {
+          if (p <= 0) return;
+          x.save(); x.beginPath(); x.rect(0, 0, DL.x0 + (TW - DL.x0) * p, TH); x.clip();
+          var mono = maske ? "#fff" : renkVurgu, monoYazi = maske ? "#000" : (renkYazi === renkVurgu ? "#fff" : renkYazi), ad = maske ? "#fff" : renkYazi;
+          x.textBaseline = "alphabetic";
+          if (DZ === "merkez") {
+            x.fillStyle = mono; x.beginPath(); x.arc(850, 300, 135, 0, Math.PI * 2); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(116); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 850, 306);
+            x.textBaseline = "alphabetic"; x.fillStyle = ad; sigdir(x, V.firma, 130, 1380); x.textAlign = "center"; x.fillText(V.firma, 850, 620);
+          } else if (DZ === "panel") {
+            var mr = maske ? "#fff" : (susVar ? zit(VUR) : renkVurgu);
+            x.strokeStyle = mr; x.lineWidth = 10; x.beginPath(); x.arc(300, 550, 190, 0, Math.PI * 2); x.stroke();
+            x.fillStyle = mr; x.font = fnt(160); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 300, 558);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 124, 930); x.fillText(V.firma, 690, 545);
+          } else if (DZ === "dev") {
+            x.fillStyle = mono; x.font = fnt(1000); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram.charAt(0), 1340, 470);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 140, 900); x.fillText(V.firma, 130, 870);
+          } else if (DZ === "minimal") {
+            x.fillStyle = mono; yuvarlak(x, 130, 130, 190, 190, 36); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(96); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 225, 232);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 120, 1250); x.fillText(V.firma, 130, 830);
+          } else if (DZ === "kose") {
+            x.fillStyle = mono; x.beginPath(); x.arc(250, 340, 120, 0, Math.PI * 2); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(100); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 250, 346);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 124, 1060); x.fillText(V.firma, 130, 610);
+          } else {
+            x.fillStyle = mono; x.beginPath(); x.arc(LOGO.mx, LOGO.my, LOGO.mr, 0, Math.PI * 2); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(150); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, LOGO.mx, LOGO.my + 8);
+            x.textAlign = "left"; x.textBaseline = "alphabetic"; x.fillStyle = ad; sigdir(x, V.firma, 128, 1040); x.fillText(V.firma, LOGO.nx, LOGO.ny);
+          }
+          x.restore();
+        }
+        // düzenin süsü (şerit / çerçeve / panel / çizgi / bant / köşe), p: 0→1 çizim ilerlemesi
+        function susCiz(x, p, renk) {
+          if (p <= 0) return;
+          x.save(); x.fillStyle = renk; x.strokeStyle = renk;
+          if (DZ === "merkez") {
+            var ic = 54, w = TW - 2 * ic, h = TH - 2 * ic, cv = 2 * (w + h);
+            x.lineWidth = 6; x.setLineDash([cv * p, cv]); x.strokeRect(ic, ic, w, h);
+            x.lineWidth = 2; var ic2 = 78, w2 = TW - 2 * ic2, h2 = TH - 2 * ic2, cv2 = 2 * (w2 + h2); x.setLineDash([cv2 * p, cv2]); x.strokeRect(ic2, ic2, w2, h2);
+            x.setLineDash([]); x.fillRect(850 - 90 * p, 670, 180 * p, 6);
+          } else if (DZ === "panel") { x.fillRect(0, 0, 600 * p, TH);
+          } else if (DZ === "dev") { x.fillRect(130, 690, 190 * p, 16);
+          } else if (DZ === "minimal") { x.fillRect(TW - 74, TH * (1 - p), 74, TH * p);
+          } else if (DZ === "kose") {
+            x.beginPath(); x.moveTo(TW - 760 * p, TH); x.lineTo(TW, TH - 560 * p); x.lineTo(TW, TH); x.closePath(); x.fill();
+            x.globalAlpha = 0.45; x.lineWidth = 8; x.beginPath(); x.moveTo(TW - 900 * p, TH); x.lineTo(TW, TH - 664 * p); x.stroke();
+          } else { x.fillRect(0, TH - 34, TW * p, 34); }
+          x.restore();
+        }
+        function sloganCiz(x, n, caret, t, renk) { if (n <= 0) return; x.fillStyle = renk; x.font = "600 54px Inter"; x.textBaseline = "alphabetic"; yaz(x, V.slogan, n, DL.sl[0], DL.sl[1], DL.sl[2], caret, t); }
+        function finalZemin(x) { if (P === "kraft") { x.drawImage(kraft, 0, 0); } else zemin(x, ANA); }
+        function finalCiz(x, logoP, serit, slg, t) {
+          finalZemin(x);
+          var yazi = P === "varak" ? "#d8b25a" : YAZ, vur = P === "varak" ? "#d8b25a" : VUR;
+          susCiz(x, serit, VUR);
+          logoCiz(x, logoP, yazi, vur, false, 1, serit > 0);
+          sloganCiz(x, Math.round(slg * V.slogan.length), slg > 0 && slg < 1, t, DZ === "panel" || DZ === "merkez" ? yazi : vur);
+        }
+        // maske dokusu (varak / lak / kabartma)
+        mX.fillStyle = "#000"; mX.fillRect(0, 0, TW, TH); logoCiz(mX, 1, "#fff", "#fff", true);
+
+        var sonOn = "";
+        function onCizT(t) {
+          var A = t < Z.T ? "teaser" : t < Z.F0 ? "bos" : t < Z.P0 + 0.1 ? "c" + Math.round(t * 30) : "son";
+          if (A === sonOn) return; sonOn = A;
+          var x = onX; x.textBaseline = "middle";
+          if (A === "teaser" || A === "son") finalCiz(x, 1, 1, 1, t);
+          else if (A === "bos") zemin(x, "#f7f6f2");
+          else if (t < Z.F2 + 0.35) {   // Comic Sans: yazılır → seçilir → silinir
+            zemin(x, "#f7f6f2"); x.fillStyle = "#1a1a1a"; x.font = "700 " + Math.min(190, Math.floor(1500 / Math.max(6, V.firma.length) * 1.7)) + "px KomikSans";
+            var n = V.firma.length, caret = true;
+            if (t < Z.F1) n = Math.floor(aral(t, Z.F0 + 0.25, Math.min(Z.F1, Z.F0 + 1.2)) * (V.firma.length + 0.99));
+            else if (t < Z.F2) caret = false;
+            else n = Math.max(0, V.firma.length - Math.floor(aral(t, Z.F2, Z.F2 + 0.35) * (V.firma.length + 1)));
+            x.textBaseline = "middle"; yaz(x, V.firma, n, TW / 2, TH / 2, "center", caret, t);
+            if (t >= Z.F1 && t < Z.F2) { var w = Math.min(1500, x.measureText(V.firma).width + 80); secim(x, (TW - w) / 2, TH / 2 - 150, w, 300); imlec(x, (TW + w) / 2 + 20, TH / 2 + 170, false); }
+          } else if (t < Z.R1) {      // logo kalemle çizilir (doğru yazı tipiyle)
+            zemin(x, "#f7f6f2"); var lp = cik(aral(t, Z.F2 + 0.35, Math.min(Z.R0, Z.F2 + 1.4)));
+            logoCiz(x, lp, "#14161c", VUR, false);
+            if (lp < 1) imlec(x, DL.x0 + (TW - DL.x0) * lp, DL.ky, true); else if (t > Z.R0) { secim(x, DL.sec[0], DL.sec[1], DL.sec[2], DL.sec[3]); imlec(x, DL.sec[0] + DL.sec[2] - 20, DL.sec[1] + DL.sec[3] + 30, false); }
+          } else if (t < Z.R2) {      // yanlış renk kovası
+            zemin(x, "#f7f6f2"); logoCiz(x, 1, "#14161c", VUR, false);
+            var r1 = 2100 * cik(aral(t, Z.R1, Z.R1 + 0.6));
+            daire(x, 1350, 260, r1, function () { var g = x.createLinearGradient(0, 0, TW, TH); g.addColorStop(0, V.yanlis_renk[0]); g.addColorStop(1, V.yanlis_renk[1]); x.fillStyle = g; x.fillRect(0, 0, TW, TH); x.drawImage(kagit, 0, 0); logoCiz(x, 1, "#fff", "#fff", false); });
+            if (t < Z.R1 + 0.6) imlec(x, 1350, 260, false);
+          } else {                     // doğru renk: kova → logo → şerit → slogan
+            var g2 = x.createLinearGradient(0, 0, TW, TH); g2.addColorStop(0, V.yanlis_renk[0]); g2.addColorStop(1, V.yanlis_renk[1]); x.fillStyle = g2; x.fillRect(0, 0, TW, TH); logoCiz(x, 1, "#fff", "#fff", false);
+            var r2 = 2100 * cik(aral(t, Z.R2, Z.R2 + 0.6)), lp2 = cik(aral(t, Z.R2 + 0.65, Z.R2 + 1.3)), sr = cik(aral(t, Z.R2 + 1.3, Z.R2 + 1.6)), sl = aral(t, Z.R2 + 1.55, Z.R2 + 2.2);
+            daire(x, 260, 860, r2, function () { finalCiz(x, lp2, sr, sl, t); });
+            if (t < Z.R2 + 0.6) imlec(x, 260, 860, false); else if (lp2 < 1) imlec(x, DL.x0 + (TW - DL.x0) * lp2, DL.ky, true);
+          }
+          onT.needsUpdate = true;
+        }
+        // arka yüz renk modu (V.arka_mod): acik | ana | vurgu
+        var AM = V.arka_mod || "acik";
+        var AZ = AM === "vurgu" ? VUR : AM === "ana" ? ANA : "#f5f4f0";
+        var AKRAFT = AM === "ana" && P === "kraft";
+        var AY = AKRAFT ? "#2b1d10" : AM === "acik" ? "#0d0d10" : zit(AZ);
+        var AY2 = AKRAFT ? "#5a4026" : AM === "acik" ? "#5b5e68" : (AY === "#ffffff" ? "rgba(255,255,255,.72)" : "rgba(20,22,28,.7)");
+        var AV = AM === "vurgu" ? AY : (AKRAFT ? VUR : (AM === "ana" && Math.abs(parlak(VUR) - parlak(ANA)) < 0.18 ? AY : VUR));
+        function arkaZemin(x) { if (AKRAFT) x.drawImage(kraft, 0, 0); else zemin(x, AZ); }
+        function satir(x, ikon, metin, y, n, caret, t) {
+          if (n <= 0) return;
+          x.fillStyle = AV; x.beginPath(); x.arc(150, y - 16, 30, 0, Math.PI * 2); x.fill();
+          x.fillStyle = zit(AV); x.font = "800 30px Inter"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(ikon, 150, y - 15);
+          x.fillStyle = AY; x.font = "600 54px Inter"; x.textBaseline = "alphabetic"; yaz(x, metin, n, 210, y, "left", caret, t);
+        }
+        var sonAr = "";
+        function arkaCizT(t) {
+          var A = t < Z.A0 ? "bos" : t < Z.M0 ? "c" + Math.round(t * 30) : "son";
+          if (A === sonAr) return; sonAr = A;
+          var x = arX; arkaZemin(x);
+          if (A === "bos") { arT.needsUpdate = true; return; }
+          var T = A === "son" ? 1e9 : t, a = Z.A0 + 0.5;
+          var mp = cik(aral(T, a, a + 0.35));
+          if (mp > 0) { x.save(); x.beginPath(); x.rect(0, 0, 110 + 240 * mp, 400); x.clip(); x.fillStyle = AV; x.beginPath(); x.arc(220, 215, 110, 0, Math.PI * 2); x.fill();
+            x.fillStyle = zit(AV); x.font = fnt(92); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 220, 222); x.restore(); }
+          x.fillStyle = AY; x.textBaseline = "alphabetic"; sigdir(x, V.firma, 76, 1180); yaz(x, V.firma, Math.floor(aral(T, a + 0.1, a + 0.6) * (V.firma.length + 0.99)), 380, 200, "left", false, t);
+          x.fillStyle = AY2; x.font = "600 46px Inter"; yaz(x, V.sektor, Math.floor(aral(T, a + 0.4, a + 0.8) * (V.sektor.length + 0.99)), 380, 268, "left", false, t);
+          x.fillStyle = AV; x.fillRect(110, 380, 160 * cik(aral(T, a + 0.5, a + 0.8)), 10);
+          var S = V.arka_satirlar, b0 = Z.A1 - 0.2;
+          S.forEach(function (s, k) { var p = aral(T, b0 + k * 0.45, b0 + k * 0.45 + 0.45); satir(x, s[0], s[1], 560 + k * 130, Math.floor(p * (s[1].length + 0.99)), p > 0 && p < 1, t); });
+          if (V.qr) { var qp = aral(T, b0 + S.length * 0.45, b0 + S.length * 0.45 + 0.6);
+            if (qp > 0) { var n = V.qr.length, bb = Math.floor(375 / n), ox = 1225, oy = 470, sat = Math.ceil(qp * n);
+              x.fillStyle = "#fff"; x.fillRect(ox - 30, oy - 30, n * bb + 60, n * bb + 60); x.fillStyle = "#0d0d10";
+              for (var r = 0; r < sat; r++) for (var c = 0; c < n; c++) if (V.qr[r][c]) x.fillRect(ox + c * bb, oy + r * bb, bb, bb);
+              if (A !== "son" && qp < 1) { secim(x, ox - 40, oy - 40, n * bb + 80, n * bb + 80); imlec(x, ox + n * bb + 30, oy + n * bb * qp, false); } } }
+          x.fillStyle = AM === "acik" ? VUR : AV; x.fillRect(0, TH - 34, TW * cik(aral(T, Z.A0 + 0.4, Z.A0 + 0.7)), 34);
+          arT.needsUpdate = true;
+        }
+
+        // ---------- 3B sahne ----------
+        var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sahne"), antialias: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+        renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        var scene = new THREE.Scene(); scene.fog = new THREE.Fog(0xc4c9d2, 20, 52);
+        var bg = document.createElement("canvas"); bg.width = 8; bg.height = 512; var bc = bg.getContext("2d"); var gr = bc.createLinearGradient(0, 0, 0, 512);
+        gr.addColorStop(0, "#f4f5f8"); gr.addColorStop(0.55, "#d9dde4"); gr.addColorStop(1, "#c4c9d2"); bc.fillStyle = gr; bc.fillRect(0, 0, 8, 512);
+        var bgT = new THREE.CanvasTexture(bg); bgT.encoding = THREE.sRGBEncoding; scene.background = bgT;
+        scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+        var camera = new THREE.PerspectiveCamera(32, W / H, 0.5, 90);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xb9c1d0, 0.4));
+        var ana = new THREE.DirectionalLight(0xffffff, 1.5); ana.position.set(-4, 10, 5); ana.castShadow = true; ana.shadow.mapSize.set(2048, 2048); ana.shadow.radius = 10; ana.shadow.bias = -0.0005;
+        Object.assign(ana.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 1, far: 30 }); scene.add(ana);
+        var dolgu = new THREE.DirectionalLight(0xdfe8ff, 0.45); dolgu.position.set(5, 4, 4); scene.add(dolgu);
+        var supurge = new THREE.PointLight(0xffffff, 0, 7); scene.add(supurge);
+        var yanIsik = new THREE.DirectionalLight(0xffffff, 0); scene.add(yanIsik); scene.add(yanIsik.target);
+        var zeminM = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ color: 0x9ea4b0, roughness: 0.95 })); zeminM.rotation.x = -Math.PI / 2; zeminM.receiveShadow = true; scene.add(zeminM);
+        function doku(c) { var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t; }
+        var onT = doku(onC), arT = doku(arC), maskT = new THREE.CanvasTexture(maskC);
+        var onM = new THREE.MeshPhysicalMaterial({ map: onT, roughness: 0.78, envMapIntensity: 0.18, toneMapped: false });
+        var onMS = new THREE.MeshPhysicalMaterial({ map: onT, roughness: 0.78, envMapIntensity: 0.18, toneMapped: false });   // perdahlı son kart
+        if (P === "kabartma") { onMS.bumpMap = maskT; onMS.bumpScale = 0.14; onMS.toneMapped = true; onMS.roughness = 0.5; }
+        var arM = new THREE.MeshPhysicalMaterial({ map: arT, roughness: 0.7, envMapIntensity: 0.2, toneMapped: false });
+        var kenarRenk = (P === "cift") ? new THREE.Color(VUR) : new THREE.Color(0xf1efe9);
+        var kenarM = new THREE.MeshStandardMaterial({ color: kenarRenk, roughness: 0.85 });
+        var foilM = null;
+        if (P === "varak") foilM = new THREE.MeshStandardMaterial({ color: 0xe1b955, metalness: 1, roughness: 0.22, alphaMap: maskT, transparent: true, opacity: 0, envMapIntensity: 1.6 });
+        if (P === "spotlak") foilM = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(ANA).offsetHSL(0, 0, 0.06), roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02, alphaMap: maskT, transparent: true, opacity: 0, envMapIntensity: 2.2 });
+
+        var GORUNMEZ = new THREE.MeshBasicMaterial({ visible: false });   // kenar duvarının kapakları görünmez: ön/arka yüzlerle çakışıp damalı desen yapmasın
+        function sekil(r) { var s = new THREE.Shape(), w = KW / 2, h = KD / 2; s.moveTo(-w + r, -h); s.lineTo(w - r, -h); s.quadraticCurveTo(w, -h, w, -h + r); s.lineTo(w, h - r); s.quadraticCurveTo(w, h, w - r, h); s.lineTo(-w + r, h); s.quadraticCurveTo(-w, h, -w, h - r); s.lineTo(-w, -h + r); s.quadraticCurveTo(-w, -h, -w + r, -h); return s; }
+        function uvDuzelt(g, ters) { var p = g.attributes.position, uv = g.attributes.uv; for (var i = 0; i < p.count; i++) { var u = p.getX(i) / KW + 0.5, v = p.getY(i) / KD + 0.5; uv.setXY(i, ters ? 1 - u : u, v); } uv.needsUpdate = true; }
+        function kartYap(r, kal, onMat, foil) {
+          var g = new THREE.Group(), s = sekil(r);
+          var on = new THREE.ShapeGeometry(s, 24); uvDuzelt(on, false);
+          var mo = new THREE.Mesh(on, onMat); mo.rotation.x = -Math.PI / 2; mo.position.y = kal / 2; mo.receiveShadow = true; g.add(mo);
+          var ar = new THREE.ShapeGeometry(s, 24); uvDuzelt(ar, false);
+          var ma = new THREE.Mesh(ar, arM); ma.rotation.x = Math.PI / 2; ma.rotation.z = Math.PI; ma.position.y = -kal / 2; g.add(ma);
+          var yan = new THREE.ExtrudeGeometry(s, { depth: kal, bevelEnabled: false, curveSegments: 24 });
+          var my = new THREE.Mesh(yan, [GORUNMEZ, kenarM]); my.rotation.x = -Math.PI / 2; my.position.y = -kal / 2; my.castShadow = true; my.receiveShadow = true;
+          my.scale.set(0.999, 0.999, 0.998); g.add(my);
+          if (foil) { var fo = new THREE.Mesh(on, foil); fo.rotation.x = -Math.PI / 2; fo.position.y = kal / 2 + 0.0015; g.add(fo); }
+          var kap = new THREE.Group(); kap.add(g); scene.add(kap); return kap;
+        }
+        var kOnce = kartYap(RAD0, KT0, onM, null), kA = kartYap(RAD, KT, onMS, foilM), kB = kartYap(RAD, KT, onMS, null);
+        kB.children[0].rotation.z = Math.PI;
+
+        // ---------- zaman → durum ----------
+        var MASA = { x: 0, y: KT0 / 2, z: 0.1, rx: 0, ry: 0, rz: 0 };
+        var USTTEN = { x: 0.02, y: 12.2, z: 5.6, hx: 0.02, hy: 0, hz: 0.75 };
+        var VURUSLAR = [Z.F1, Z.R1, Z.R2, Z.P0];
+        function durum(t) {
+          var k, a = Object.assign({}, MASA), b = null, once = true;
+          if (t < Z.T) {
+            k = kar({ x: 1.2, y: 8.4, z: 8.8, hx: 0, hy: 0, hz: -0.9 }, { x: 0.3, y: 8.8, z: 8.0, hx: 0, hy: 0, hz: -0.8 }, cik(aral(t, 0, Z.T)));
+            var dus = aral(t, 0, 0.55); a.y = KT / 2 + 3.4 * (1 - dus * dus) + (t > 0.55 ? 0.12 * Math.abs(Math.sin((t - 0.55) * 14)) * Math.exp(-(t - 0.55) * 9) : 0);
+            a.ry = -0.12 - 2.6 * (1 - cik(dus)); a.rx = 0.5 * (1 - dus); a.rz = -0.35 * (1 - dus); once = false;
+            if (t > 0.55 && t < 1.0) { var sr = 0.12 * Math.exp(-(t - 0.55) * 10) * Math.sin((t - 0.55) * 70); k.x += sr; k.y += sr * 0.6; }
+          } else if (t < Z.F0) {
+            var u1 = io(aral(t, Z.T, Z.F0)), an = -0.75 + 1.3 * u1;
+            k = { x: 9.4 * Math.sin(an), y: 6.2 + 0.6 * u1, z: 9.4 * Math.cos(an), hx: 0, hy: 1.2, hz: 0 }; a.ry = 0.1 - 0.1 * u1;
+          } else if (t < Z.P0) {
+            var dr = aral(t, Z.F0, Z.P0);
+            k = Object.assign({}, USTTEN, { x: USTTEN.x + 0.25 * Math.sin(dr * 5), z: USTTEN.z + 0.3 * Math.cos(dr * 4) });
+          } else if (t < Z.A0) {      // perdah açılışı: eğik yakın plan, yandan kayan ışık
+            var up = io(aral(t, Z.P0, Z.P0 + 0.8)), ud = aral(t, Z.P0, Z.A0);
+            var yakin = { x: -1.9 + 0.9 * ud, y: 3.3, z: 5.9, hx: 0.05, hy: 0, hz: -0.2 };   // logoya eğik yakın plan
+            if (P === "cift") yakin = { x: -5.6 + 1.0 * ud, y: 1.1, z: 3.2, hx: -0.4, hy: 0, hz: 0 };
+            if (P === "oval") yakin = { x: -3.2 + 0.8 * ud, y: 4.6, z: 3.6, hx: -1.2, hy: 0, hz: -0.4 };
+            k = kar(USTTEN, yakin, up); once = false;
+            if (P === "cift") { a.rz = 0.0; a.rx = 0; }
+          } else if (t < Z.M0) {
+            var f = aral(t, Z.A0, Z.A0 + 0.8); once = false;
+            k = Object.assign({}, USTTEN, { y: USTTEN.y - 0.3 * io(aral(t, Z.A0, Z.M0)) });
+            if (t < Z.A0 + 0.8) k = kar({ x: -2.0, y: 3.2, z: 5.2, hx: 0.2, hy: 0, hz: 0 }, k, io(aral(t, Z.A0, Z.A0 + 0.6)));
+            a.y = KT / 2 + 1.1 * Math.sin(Math.PI * f); a.rz = Math.PI * io(f);
+          } else {
+            once = false;
+            var u4 = aral(t, Z.M0, Z.SON), bob = 0.06 * Math.sin(t * 2.1), bob2 = 0.06 * Math.sin(t * 1.7 + 1.3), cta = io(aral(t, Z.C, Z.C + 0.95));
+            var an4 = 0.22 - 0.44 * io(u4), Rr = 26.5 + 3 * cta;
+            k = { x: Rr * Math.sin(an4), y: 3.2 + 1.2 * cta, z: Rr * Math.cos(an4), hx: 0, hy: 2.6 - 2.3 * cta, hz: 0 };
+            a = { x: -1.88, y: 1.5 + bob, z: 0, rx: 1.2, ry: 0.26, rz: 0.04 }; b = { x: 1.88, y: 1.5 + bob2, z: 0, rx: 1.2, ry: -0.26, rz: -0.04 };
+            var g4 = cik(aral(t, Z.M0, Z.M0 + 0.7));
+            a = kar({ x: 0, y: KT / 2, z: 0.1, rx: 0, ry: 0, rz: Math.PI }, a, g4); b = kar(Object.assign({}, b, { x: 8, y: 0.6 }), b, g4);
+          }
+          if (t >= Z.P0) once = false;
+          var it = 0; VURUSLAR.forEach(function (v) { if (t >= v && t < v + 0.6) it = Math.max(it, 0.35 * Math.exp(-(t - v) * 7)); });
+          return { k: k, a: a, b: b, it: it, once: once };
+        }
+        function ciz(t) {
+          onCizT(t); arkaCizT(t);
+          var d = durum(t);
+          var yon = new THREE.Vector3(d.k.hx - d.k.x, d.k.hy - d.k.y, d.k.hz - d.k.z).normalize();
+          camera.position.set(d.k.x + yon.x * d.it, d.k.y + yon.y * d.it, d.k.z + yon.z * d.it); camera.lookAt(d.k.hx, d.k.hy, d.k.hz);
+          var aktif = d.once ? kOnce : kA; kOnce.visible = d.once; kA.visible = !d.once;
+          aktif.position.set(d.a.x, d.a.y, d.a.z); aktif.rotation.set(d.a.rx, d.a.ry, d.a.rz);
+          kB.visible = !!d.b; if (d.b) { kB.position.set(d.b.x, d.b.y, d.b.z); kB.rotation.set(d.b.rx, d.b.ry, d.b.rz); }
+          if (foilM) foilM.opacity = t < Z.P0 ? 0 : (t < Z.P0 + 0.7 ? aral(t, Z.P0, Z.P0 + 0.7) : 1);
+          if (P === "kabartma") onMS.bumpScale = t < Z.P0 ? 0 : 0.14 * aral(t, Z.P0, Z.P0 + 0.6);
+          // perdah ışığı: yandan süpüren sert ışık (kabartma gölgesi, varak/lak parlaması)
+          if (t >= Z.P0 && t < Z.A0) { var u = aral(t, Z.P0 + 0.2, Z.A0); yanIsik.intensity = 2.2; yanIsik.position.set(-6 + 12 * u, 0.8, 2.0); yanIsik.target.position.set(0, 0, 0); }
+          else yanIsik.intensity = 0;
+          var sw = 0, sx = 0;
+          [[Z.T, 1], [Z.F0, 1], [Z.R2, 1.2], [Z.M0, 1.6]].forEach(function (c) { var uu = (t - c[0]) / 0.7; if (uu >= 0 && uu < 1) { sw = 12 * c[1] * Math.sin(Math.PI * uu); sx = -3 + 6 * uu; } });
+          supurge.intensity = sw; supurge.position.set(sx, 1.4, 1.6);
+          renderer.render(scene, camera);
+        }
+
+        function kur() {
+          var tl = gsap.timeline({ paused: true, onUpdate: function () { ciz(tl.time()); } });
+          var ir = { immediateRender: false };
+          V.flaslar.forEach(function (f) { tl.fromTo("#flas", { opacity: f[1] }, Object.assign({ opacity: 0, duration: 0.22, ease: "power2.out" }, ir), f[0]); });
+          V.giris.forEach(function (g) {   // [secici, tür, zaman]
+            var e = document.querySelector(g[0]); if (!e) return;
+            var tur = g[1], s = g[2];
+            if (tur === "yukari") tl.fromTo(g[0], { yPercent: 60, opacity: 0 }, Object.assign({ yPercent: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, ir), s);
+            else if (tur === "buyuk") tl.fromTo(g[0], { scale: 1.3, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.45, ease: "expo.out", transformOrigin: "0% 50%" }, ir), s);
+            else if (tur === "zipla") tl.fromTo(g[0], { scale: 0.5, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2.5)" }, ir), s);
+            else if (tur === "dus") tl.fromTo(g[0], { y: -30, opacity: 0 }, Object.assign({ y: 0, opacity: 1, duration: 0.35, ease: "back.out(2)" }, ir), s);
+            else if (tur === "damga") { tl.set(g[0], { rotation: -9 }, 0); tl.fromTo(g[0], { scale: 2.4, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, rotation: -9, duration: 0.22, ease: "power4.in" }, ir), s); }
+            else if (tur === "pop") tl.fromTo(g[0], { scale: 0.86, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.18, ease: "back.out(2.2)" }, ir), s);
+            else if (tur === "panel") tl.fromTo(g[0], { yPercent: 100 }, Object.assign({ yPercent: 0, duration: 0.55, ease: "expo.out" }, ir), s);
+            else if (tur === "solgun") tl.fromTo(g[0], { opacity: 0, y: 24 }, Object.assign({ opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, ir), s);
+            else if (tur === "salla") tl.fromTo(g[0], { x: 0 }, Object.assign({ keyframes: { x: [0, -16, 13, -9, 5, 0] }, duration: 0.4, ease: "none" }, ir), s);
+            else if (tur === "kalp") tl.fromTo(g[0], { y: 0, opacity: 0, scale: 0.4 }, Object.assign({ keyframes: { y: [0, -160, -340], opacity: [0, 1, 0], scale: [0.4, 1.1, 0.9] }, duration: 1.7, ease: "none" }, ir), s);
+            else if (tur === "gizle") tl.set(g[0], { display: "none" }, s);
+            else if (tur === "goster") tl.set(g[0], { display: "inline-flex" }, s);
+            else if (tur === "halka") tl.to(g[0], { x: g[3], duration: 0.32, ease: "back.out(2)" }, s);
+            else if (tur === "zipzip") tl.fromTo(g[0], { y: -8 }, Object.assign({ y: 8, duration: 0.3, yoyo: true, repeat: 11, ease: "sine.inOut" }, ir), s);
+          });
+          var yz = { n: 0 }, ic = document.getElementById("yorum-ic"), YZ = "Firma adı + sektör";
+          if (ic) tl.fromTo(yz, { n: 0 }, Object.assign({ n: YZ.length, duration: 1.3, ease: "none", onUpdate: function () { ic.textContent = YZ.slice(0, Math.round(yz.n)); } }, ir), Z.C + 4.6);
+          tl.set({}, {}, Z.SON);
+          ciz(0);
+          document.querySelectorAll(".yazi .ks").forEach(function (k, i, L) {   // kelime kelime vurgu (karaoke)
+            var t = parseFloat(k.dataset.t), n = L[i + 1], t2 = n && n.closest(".clip") === k.closest(".clip") ? parseFloat(n.dataset.t) : t + 0.45;
+            tl.set(k, { color: "#ffd84d" }, t); tl.set(k, { color: "#ffffff" }, Math.max(t + 0.05, t2));
+          });
+          window.__timelines["main"] = tl;
+        }
+        var lt = document.getElementById("logo-tb");
+        var fontlar = ["600 54px Inter", "800 30px Inter", "900 66px Inter", "700 100px Klasik", "800 100px Guclu", "800 100px Samimi", "700 100px KomikSans"].map(function (f) { return document.fonts.load(f, V.firma + " ŞİĞÜÖÇ"); });
+        Promise.all([lt.complete ? Promise.resolve() : new Promise(function (r) { lt.onload = r; lt.onerror = r; })].concat(fontlar)).then(function () {
+          mX.fillStyle = "#000"; mX.fillRect(0, 0, TW, TH); logoCiz(mX, 1, "#fff", "#fff", true); maskT.needsUpdate = true;
+          kur();
+        });
+      })();
+    </script>
+  </body>
+</html>

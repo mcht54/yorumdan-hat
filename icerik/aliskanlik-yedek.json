@@ -1,0 +1,182 @@
+[
+ {
+  "ne": "indirim diye alınan kıyafet",
+  "fiyat": 800,
+  "adet": 2,
+  "siklik": "ay"
+ },
+ {
+  "ne": "kahve",
+  "fiyat": 120,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "dışarıdan yemek siparişi",
+  "fiyat": 400,
+  "adet": 3,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "taksi",
+  "fiyat": 250,
+  "adet": 2,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "dizi ve müzik aboneliği",
+  "fiyat": 350,
+  "adet": 1,
+  "siklik": "ay"
+ },
+ {
+  "ne": "enerji içeceği",
+  "fiyat": 70,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "simit ve çay",
+  "fiyat": 60,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "market atıştırmalığı",
+  "fiyat": 90,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "şişe su",
+  "fiyat": 15,
+  "adet": 2,
+  "siklik": "gun"
+ },
+ {
+  "ne": "hafta sonu kafe",
+  "fiyat": 600,
+  "adet": 1,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "online alışveriş kargosu",
+  "fiyat": 80,
+  "adet": 2,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "oyun içi satın alma",
+  "fiyat": 300,
+  "adet": 2,
+  "siklik": "ay"
+ },
+ {
+  "ne": "öğle yemeği dışarıda",
+  "fiyat": 300,
+  "adet": 5,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "kullanılmayan spor salonu üyeliği",
+  "fiyat": 1500,
+  "adet": 1,
+  "siklik": "ay"
+ },
+ {
+  "ne": "tatlı",
+  "fiyat": 150,
+  "adet": 2,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "fast food",
+  "fiyat": 350,
+  "adet": 2,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "mobil veri ek paketi",
+  "fiyat": 200,
+  "adet": 1,
+  "siklik": "ay"
+ },
+ {
+  "ne": "otopark",
+  "fiyat": 100,
+  "adet": 5,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "akşam çekirdek ve kuruyemiş",
+  "fiyat": 120,
+  "adet": 3,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "uygulama aboneliği",
+  "fiyat": 150,
+  "adet": 3,
+  "siklik": "ay"
+ },
+ {
+  "ne": "kantin",
+  "fiyat": 80,
+  "adet": 5,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "gece atıştırma siparişi",
+  "fiyat": 250,
+  "adet": 1,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "soğuk içecek",
+  "fiyat": 50,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "kahvaltı dışarıda",
+  "fiyat": 700,
+  "adet": 1,
+  "siklik": "hafta"
+ },
+ {
+  "ne": "araba yıkama",
+  "fiyat": 300,
+  "adet": 2,
+  "siklik": "ay"
+ },
+ {
+  "ne": "kozmetik deneme ürünü",
+  "fiyat": 400,
+  "adet": 1,
+  "siklik": "ay"
+ },
+ {
+  "ne": "bayilik dergi ve gazete",
+  "fiyat": 40,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "pet şişe kola",
+  "fiyat": 45,
+  "adet": 1,
+  "siklik": "gun"
+ },
+ {
+  "ne": "sinema",
+  "fiyat": 300,
+  "adet": 2,
+  "siklik": "ay"
+ },
+ {
+  "ne": "telefon kılıfı ve aksesuar",
+  "fiyat": 350,
+  "adet": 1,
+  "siklik": "ay"
+ }
+]

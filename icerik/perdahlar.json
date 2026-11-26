@@ -1,0 +1,8 @@
+[
+ {"kod": "oval", "ad": "oval kesim", "acilis": "Kartın köşeleri yuvarlak kesilir; kart kesimden çıkar, köşe yakın planda görünür.", "uygun": ["otomotiv", "restoran-kafe", "kres-anaokulu", "guzellik-bakim", "veteriner", "spor-fitness"]},
+ {"kod": "kabartma", "ad": "kabartma baskı", "acilis": "Logo kabartmalı basılır; yandan kayan ışıkta kabartma gölgeyle belirir.", "uygun": ["guzellik-bakim", "restoran-kafe", "mobilya-dekorasyon", "etkinlik-organizasyon", "e-ticaret"]},
+ {"kod": "varak", "ad": "altın varak", "acilis": "Logo altın varakla basılır; kart dönünce ışıkta parlar.", "uygun": ["etkinlik-organizasyon", "hukuk-profesyonel", "emlak-gayrimenkul", "turizm-konaklama", "kurumsal-firma"]},
+ {"kod": "spotlak", "ad": "lokal lak", "acilis": "Mat kartta yalnız logo parlak lakla basılır; ışık açısı değişince logo parlar.", "uygun": ["dis-klinigi", "emlak-gayrimenkul", "otomotiv", "teknoloji-yazilim", "saglik-klinik"]},
+ {"kod": "kraft", "ad": "kraft kâğıt", "acilis": "Kart doğal kraft kâğıda basılır; kâğıt dokusu yakın planda, sıcak ışık.", "uygun": ["restoran-kafe", "insaat-yapi", "urun-katalogu", "yerel-hizmet", "sanayi-uretim"]},
+ {"kod": "cift", "ad": "çift kalın kart", "acilis": "Kart iki kat kalın; yan çevrilince renkli kalın kenar görünür.", "uygun": ["nakliyat", "lojistik", "insaat-yapi", "sanayi-uretim", "tesisat", "temizlik"]}
+]

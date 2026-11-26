@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.mcht.yorumdan-panel</string>
+  <!-- Panel senkronu (10 dk): tablo taze kalsın, "Düzelt" ve duraklat/devam birkaç dakikada uygulansın. Yalnız JSON; üretim yapmaz. -->
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/mucahit/Documents/yorumdan-tasarim/.venv/bin/python</string>
+    <string>/Users/mucahit/Documents/yorumdan-tasarim/hat/panel.py</string>
+  </array>
+  <key>WorkingDirectory</key><string>/Users/mucahit/Documents/yorumdan-tasarim</string>
+  <key>StartInterval</key><integer>600</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>/Users/mucahit/Documents/yorumdan-tasarim/durum/panel-launchd.log</string>
+  <key>StandardErrorPath</key><string>/Users/mucahit/Documents/yorumdan-tasarim/durum/panel-launchd.log</string>
+</dict>
+</plist>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+<defs>
+ <radialGradient id="bg" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#f2283f"/><stop offset="1" stop-color="#b80c20"/></radialGradient>
+ <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="26" stdDeviation="26" flood-color="#5a0010" flood-opacity=".45"/></filter>
+</defs>
+<rect width="1080" height="1080" fill="url(#bg)"/>
+<g transform="translate(540 560) rotate(-10)" filter="url(#g)">
+ <rect x="-300" y="-185" width="600" height="350" rx="34" fill="#1d1f27" transform="translate(48 -70) rotate(8)"/>
+ <rect x="-300" y="-150" width="600" height="350" rx="34" fill="#ffffff"/>
+ <rect x="-300" y="-150" width="34" height="350" rx="0" fill="#e3122b"/>
+ <rect x="-300" y="-150" width="40" height="350" rx="34" fill="#e3122b"/>
+ <circle cx="-150" cy="-40" r="62" fill="#e3122b"/>
+ <text x="-150" y="-14" font-family="Inter, Arial Black, sans-serif" font-weight="900" font-size="78" fill="#fff" text-anchor="middle">K</text>
+ <rect x="-50" y="-70" width="260" height="34" rx="17" fill="#1d1f27"/>
+ <rect x="-50" y="-16" width="180" height="22" rx="11" fill="#b9bdc8"/>
+ <rect x="-190" y="80" width="300" height="18" rx="9" fill="#d5d8df"/>
+ <rect x="-190" y="118" width="220" height="18" rx="9" fill="#d5d8df"/>
+</g>
+<g transform="translate(745 345) rotate(38)" filter="url(#g)">
+ <rect x="-22" y="-210" width="44" height="300" rx="10" fill="#1d1f27"/>
+ <rect x="-22" y="-210" width="44" height="40" rx="10" fill="#ffffff"/>
+ <path d="M-22 90 L22 90 L0 150 Z" fill="#f3d6a8"/><path d="M-7 132 L7 132 L0 150 Z" fill="#1d1f27"/>
+</g>
+</svg>

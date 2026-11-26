@@ -1,0 +1,91 @@
+# Yorumdan hattı — Mac kapalıyken de çalışır (2026-11-27).
+# Saatler UTC (Türkiye = UTC+3). GitHub zamanlaması 5-30 dk gecikebilir; hattın "bugün zaten paylaşıldı" kapısı çift paylaşımı önler.
+#  09:15 UTC = 12:15  Kartvizitçi          (@kartvizitci.tr)
+#  09:30 UTC = 12:30  Cüzdan Hocası · Yılda Kaça Patlıyor?
+#  14:30 UTC = 17:30  Cüzdan Hocası · Maaş Kapışması
+#  17:30 UTC = 20:30  Cüzdan Hocası · Bütçe Kliniği
+# Siteci Abi (web) Site Mucidi motoruna bağlı olduğu için şimdilik Mac'te kalır; kayıtlar aynı özel depoda (mcht54/yorumdan-durum).
+name: gunluk
+on:
+  schedule:
+    - cron: "15 9 * * *"
+    - cron: "30 9 * * *"
+    - cron: "30 14 * * *"
+    - cron: "30 17 * * *"
+  workflow_dispatch:
+    inputs:
+      hesap: {description: "kartvizit | para", default: "para"}
+      bicim: {description: "butce | aliskanlik | kapisma (yalnız para)", default: "butce"}
+      deneme: {description: "true = paylaşmadan dene", default: "true"}
+concurrency:
+  group: yorumdan-durum      # aynı anda tek çalışma: durum deposunda çakışma olmasın
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  bolum:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      YORUMDAN_SESSIZ: "1"          # açık depo: günlük satırları Actions kaydına yazılmaz, yalnız özel durum deposuna
+      YORUMDAN_KAYNAK: "actions"
+      HYPERFRAMES_NO_TELEMETRY: "1"
+      DO_NOT_TRACK: "1"
+      HYPERFRAMES_CLI: ${{ github.workspace }}/.arac/node_modules/.bin/hyperframes
+      TZ: Europe/Istanbul
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      IG_PARA_ID: ${{ secrets.IG_PARA_ID }}
+      IG_PARA_API: ${{ secrets.IG_PARA_API }}
+      IG_PARA_TOKEN: ${{ secrets.IG_PARA_TOKEN }}
+      META_PARA_PAGE_ID: ${{ secrets.META_PARA_PAGE_ID }}
+      IG_KARTVIZIT_ID: ${{ secrets.IG_KARTVIZIT_ID }}
+      IG_KARTVIZIT_API: ${{ secrets.IG_KARTVIZIT_API }}
+      IG_KARTVIZIT_TOKEN: ${{ secrets.IG_KARTVIZIT_TOKEN }}
+      META_KARTVIZIT_PAGE_ID: ${{ secrets.META_KARTVIZIT_PAGE_ID }}
+      YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+      YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+      YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+    steps:
+      - name: Hangi bölüm
+        id: is
+        run: |
+          case "${{ github.event.schedule }}" in
+            "15 9 * * *")  echo "arg=--hesap kartvizit" >> $GITHUB_OUTPUT ;;
+            "30 9 * * *")  echo "arg=--hesap para --bicim aliskanlik" >> $GITHUB_OUTPUT ;;
+            "30 14 * * *") echo "arg=--hesap para --bicim kapisma" >> $GITHUB_OUTPUT ;;
+            "30 17 * * *") echo "arg=--hesap para --bicim butce" >> $GITHUB_OUTPUT ;;
+            *) a="--hesap ${{ inputs.hesap }}"; [ "${{ inputs.hesap }}" = "para" ] && a="$a --bicim ${{ inputs.bicim }}"
+               [ "${{ inputs.deneme }}" = "true" ] && a="$a --deneme"; echo "arg=$a" >> $GITHUB_OUTPUT ;;
+          esac
+      - uses: actions/checkout@v4
+      - name: Durum deposu (özel)
+        uses: actions/checkout@v4
+        with:
+          repository: mcht54/yorumdan-durum
+          ssh-key: ${{ secrets.DURUM_DEPLOY_KEY }}
+          path: durum
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - uses: actions/setup-node@v4
+        with: {node-version: "22"}
+      - name: Önbellek (Chrome, Whisper modeli, hyperframes)
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/hyperframes
+            ~/.cache/huggingface
+            .arac/node_modules
+          key: yorumdan-arac-v1-hf0.9.80-whisper-small
+      - name: Kurulum
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg fonts-noto-color-emoji > /dev/null
+          pip install -q -r requirements.txt
+          mkdir -p .arac && cd .arac && [ -x node_modules/.bin/hyperframes ] || npm install -s --no-audit --no-fund hyperframes@0.9.80
+          cd .. && printf '%s' "${{ secrets.PANEL_ANAHTARI }}" > hat/.panel_anahtari && chmod 600 hat/.panel_anahtari
+      - name: Bölüm üret ve paylaş
+        run: python hat/gunluk.py ${{ steps.is.outputs.arg }} > /dev/null 2>&1 || true
+      - name: Sonuç (yalnız durum, kişisel veri yok)
+        if: always()
+        run: |
+          tail -n 40 durum/gunluk.log | grep -E "(para|kartvizit)[^ ]*: (sonuç|HATA|kalite|GÜVENLİK|DENEME|bugün zaten)" | sed -E 's/"kullanici": "[^"]*"/"kullanici": "…"/g; s/@[A-Za-z0-9._]+/@…/g' | cut -c1-220 || true

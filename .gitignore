@@ -1,0 +1,13 @@
+.env
+durum/
+cikti/
+__pycache__/
+*.pyc
+is/
+.venv/
+
+# panel senkron sırrı (chmod 600, asla gitte değil)
+hat/.panel_anahtari
+.arac/
+arastirma/takip-listesi.json
+*.yedek-*

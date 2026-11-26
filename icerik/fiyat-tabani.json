@@ -1,0 +1,12 @@
+{
+ "_aciklama": "Bütçe motorunun alt sınırları. Kalem = max(maaş yüzdesi, bu taban). Her ay TÜRK-İŞ açlık/yoksulluk verisi çıkınca güncellenir.",
+ "kaynak_tarih": "2026-10",
+ "kaynak": "TÜRK-İŞ Açlık ve Yoksulluk Sınırı Ekim 2026: 4 kişilik aile gıda 38.024 TL, bekar çalışan yaşama maliyeti 49.124 TL",
+ "mutfak_yetiskin": 9500,
+ "mutfak_cocuk": 6500,
+ "fatura_bekar": 3500,
+ "fatura_aile": 4500,
+ "ulasim": 1800,
+ "bekar_yasama_maliyeti": 49124,
+ "_not_fatura_ulasim": "fatura ve ulaşım tabanları resmî veri değil, tahmini alt sınır (kış dahil); kaynaklı veri bulununca güncellenir"
+}

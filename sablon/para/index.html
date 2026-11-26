@@ -1,0 +1,161 @@
+<!doctype html>
+<!--
+  Cüzdan Hocası — BÜTÇE KLİNİĞİ bölüm şablonu (otomatik). hat/para.py doldurur:
+    SURE      toplam süre (sn)
+    KATMANLAR zamanlı HTML katmanları (kanca, teşhis, zarflar, ipucu, sayaç, kapanış, altyazılar) — python üretir
+    VERI      JSON: Z (cümle başları), ifadeler, paralar, zipla, giris, flaslar
+    MASKOT    maskot SVG'si (profil/cuzdan/maskot.py sablon_svg) — tüm ifadeler id'li gruplarda
+  Görsel dil: sıcak krem güneş ışını zemin, koyu yeşil yazı, mercan/altın vurgu; maskot alt ortada (yapay zekâ görseli değil, kodla çizim).
+-->
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-600.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-ext-600.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-800.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-ext-800.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-900.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-ext-900.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      :root { --zemin: #fff3d6; --isin: #ffe3a1; --yesil: #0d3b2a; --yesil2: #127049; --mercan: #ff5a3c; --altin: #ffc928; --krem: #fffaf0; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--zemin); }
+      #root { position: relative; width: 1080px; height: 1920px; font-family: Inter, system-ui, sans-serif; color: var(--yesil); overflow: hidden; background: var(--zemin); }
+      #zemin-isin { position: absolute; left: 50%; top: 1420px; width: 3400px; height: 3400px; margin: -1700px 0 0 -1700px;
+        background: repeating-conic-gradient(from 0deg, var(--isin) 0deg 9deg, rgba(255, 227, 161, 0) 9deg 18deg); opacity: 0.85; }
+      #zemin-isik { position: absolute; inset: 0; background: radial-gradient(ellipse 70% 45% at 50% 74%, rgba(255, 250, 240, 0.95) 0%, rgba(255, 250, 240, 0) 70%); }
+      .ust { position: absolute; left: 90px; top: 250px; width: 900px; }
+      .etiket { display: inline-flex; align-items: center; gap: 14px; padding: 12px 26px; border-radius: 999px; border: 3px solid var(--yesil); background: var(--krem);
+        color: var(--yesil); font-size: 28px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: 0 8px 0 rgba(13, 59, 42, 0.12); }
+      .etiket i { width: 12px; height: 12px; border-radius: 50%; background: var(--mercan); display: inline-block; }
+      .etiket.dolu { background: var(--yesil); color: var(--krem); }
+      .etiket.dolu i { background: var(--altin); }
+      .baslik { margin-top: 26px; font-family: Guclu, Inter, sans-serif; font-size: 116px; font-weight: 800; line-height: 1.02; color: var(--yesil); letter-spacing: -0.01em; }
+      .baslik b { color: var(--mercan); }
+      .baslik.beyaz { color: var(--yesil); }
+      .balon { margin-top: 26px; display: flex; gap: 22px; align-items: flex-start; padding: 30px 32px; border-radius: 36px; background: #fff;
+        border: 4px solid var(--yesil); box-shadow: 0 14px 0 rgba(13, 59, 42, 0.14); }
+      .bm { flex: 1; min-width: 0; }
+      .avatar { flex: none; width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #f58529, #dd2a7b 55%, #8134af); padding: 5px; }
+      .avatar span { display: flex; width: 100%; height: 100%; border-radius: 50%; background: #eceef2; border: 4px solid #fff; align-items: center; justify-content: center; font-weight: 900; font-size: 30px; color: #8a8f9c; }
+      .balon-kim { font-size: 28px; font-weight: 700; color: #6d7a72; margin-bottom: 8px; }
+      .balon-metin { font-size: 44px; font-weight: 800; line-height: 1.18; color: var(--yesil); }
+      .kalp { flex: none; margin-top: 4px; font-size: 30px; color: var(--mercan); font-weight: 800; text-align: center; line-height: 1.1; }
+      .kalp b { display: block; font-size: 40px; }
+      .cipler { margin-top: 30px; display: flex; gap: 20px; flex-wrap: wrap; }
+      .cip { display: inline-flex; flex-direction: column; padding: 22px 34px; border-radius: 32px; font-family: Guclu, Inter, sans-serif; font-size: 92px; font-weight: 800; line-height: 1;
+        border: 4px solid var(--yesil); box-shadow: 0 10px 0 rgba(13, 59, 42, 0.16); }
+      .cip small { font-family: Inter, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.75; }
+      .c-maas { background: var(--yesil2); color: #fff; }
+      .c-kira { background: var(--mercan); color: #fff; }
+      .cubuk { position: relative; margin-top: 60px; height: 160px; border-radius: 30px; background: #fff; border: 5px solid var(--yesil); overflow: hidden; box-shadow: 0 10px 0 rgba(13, 59, 42, 0.14); }
+      .dolgu { position: absolute; left: 0; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, var(--mercan) 0 26px, #ff7a5e 26px 52px); }
+      .cl { position: absolute; right: 30px; top: 50%; margin-top: -30px; font-size: 56px; font-weight: 900; color: var(--yesil); line-height: 60px; }
+      .lejant { margin-top: 30px; display: flex; gap: 34px; font-size: 46px; font-weight: 800; }
+      .lejant i { display: inline-block; width: 30px; height: 30px; border-radius: 8px; margin-right: 12px; vertical-align: -3px; border: 3px solid var(--yesil); }
+      .yigin { margin-top: 26px; display: flex; height: 34px; border-radius: 17px; overflow: hidden; border: 4px solid var(--yesil); background: #fff; }
+      .yigin i { display: block; height: 100%; }
+      .zarflar { margin-top: 26px; display: flex; flex-direction: column; gap: 14px; }
+      .zarf { display: flex; align-items: center; gap: 22px; padding: 14px 26px 14px 16px; border-radius: 26px; background: #fff; border: 4px solid var(--yesil);
+        box-shadow: 0 8px 0 rgba(13, 59, 42, 0.14); border-left: 22px solid var(--r); }
+      .zarf .ik { font-size: 44px; width: 60px; text-align: center; }
+      .zarf .za { flex: 1; font-size: 42px; font-weight: 800; }
+      .zarf .zt { font-family: Guclu, Inter, sans-serif; font-size: 48px; font-weight: 800; color: var(--yesil); white-space: nowrap; }
+      .ipkart { margin-top: 30px; display: flex; gap: 26px; align-items: center; padding: 40px 40px; border-radius: 44px; background: var(--altin); border: 5px solid var(--yesil);
+        box-shadow: 0 14px 0 rgba(13, 59, 42, 0.18); font-family: Guclu, Inter, sans-serif; font-size: 84px; font-weight: 800; line-height: 1.08; }
+      .ampul { font-size: 120px; flex: none; }
+      .sayac-ust { margin-top: 60px; font-size: 70px; font-weight: 800; }
+      .sayac { font-family: Guclu, Inter, sans-serif; font-size: 220px; font-weight: 800; line-height: 1; color: var(--yesil2); letter-spacing: -0.02em; white-space: nowrap; }
+      .sayac.kirmizi { color: var(--mercan); }
+      .sayac.uzun { font-size: 168px; }
+      .sayac.cokuzun { font-size: 128px; }
+      .uyari { margin-top: 34px; font-size: 30px; font-weight: 600; color: #6d7a72; }
+      .para { position: absolute; width: 96px; height: 96px; border-radius: 50%; background: var(--altin); border: 6px solid #e09a00; color: #a86a00;
+        font-size: 56px; font-weight: 900; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 0 rgba(13, 59, 42, 0.18); }
+      #maskot { z-index: 15; position: absolute; left: 250px; top: 1250px; width: 580px; height: 609px; }
+      #maskot-ic { position: absolute; inset: 0; transform-origin: 50% 100%; }
+      .yazi { position: absolute; left: 90px; top: 1150px; width: 900px; display: flex; justify-content: center; z-index: 40; }
+      .yazi span { display: inline-block; padding: 12px 26px; border-radius: 18px; background: var(--yesil); color: #fff; font-size: 40px; font-weight: 800; line-height: 1.2; text-align: center; }
+      .yazi .ks { font-weight: 800; color: rgba(255, 255, 255, 0.62); }
+      #cta-panel { position: absolute; left: 0; top: 980px; width: 1080px; height: 940px; border-radius: 70px 70px 0 0; background: linear-gradient(180deg, #1a8a5c 0%, #0d3b2a 100%); }
+      #yorum-kutu { position: absolute; left: 110px; top: 1040px; width: 860px; display: flex; align-items: center; gap: 20px; padding: 22px 26px; border-radius: 999px; background: #fff; box-shadow: 0 16px 0 rgba(0, 0, 0, 0.2); }
+      #yorum-kutu .av { flex: none; width: 64px; height: 64px; border-radius: 50%; background: #d9dce3; }
+      #yorum-yazi { font-size: 42px; font-weight: 800; color: var(--yesil); white-space: nowrap; overflow: hidden; }
+      #imlec { display: inline-block; width: 4px; height: 46px; background: var(--mercan); margin-left: 4px; vertical-align: middle; }
+      #okb { margin-left: auto; flex: none; width: 66px; height: 66px; border-radius: 50%; background: var(--mercan); color: #fff; font-size: 40px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+      #cta-not { position: absolute; left: 110px; top: 1170px; width: 860px; text-align: center; font-size: 40px; font-weight: 700; color: #d8f3e4; }
+      #cta-not b { color: var(--altin); font-weight: 900; }
+      #marka { position: absolute; left: 90px; top: 790px; width: 900px; display: flex; flex-direction: column; gap: 6px; }
+      #marka b { font-family: Guclu, Inter, sans-serif; font-size: 96px; font-weight: 800; color: var(--yesil2); }
+      #marka span { font-size: 42px; font-weight: 700; color: #6d7a72; }
+      #flas { position: absolute; inset: 0; background: #fff; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{SURE}}" data-width="1080" data-height="1920">
+      <div id="zemin" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="0" style="position:absolute;inset:0"><div id="zemin-isin"></div><div id="zemin-isik"></div></div>
+{{KATMANLAR}}
+      <div id="maskot" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="16" data-layout-allow-overlap data-layout-allow-overflow><div id="maskot-ic">{{MASKOT}}</div></div>
+      <div id="flas" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="30" data-layout-allow-overlap></div>
+    </div>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var V = {{VERI}};
+        var Z = V.Z;
+        function tl$(tl) {
+          var ir = { immediateRender: false };
+          tl.fromTo("#zemin-isin", { rotation: 0 }, Object.assign({ rotation: Z.SON * 5, duration: Z.SON, ease: "none" }, ir), 0);
+          V.flaslar.forEach(function (f) { tl.fromTo("#flas", { opacity: f[1] }, Object.assign({ opacity: 0, duration: 0.22, ease: "power2.out" }, ir), f[0]); });
+          // maskot: nefes (sonlu tekrar), sahne geçişinde zıplama, ifade ve para seviyesi
+          var nefes = Math.max(1, Math.floor(Z.SON / 0.9));
+          tl.fromTo("#maskot-svg", { scaleY: 1, scaleX: 1 }, Object.assign({ scaleY: 1.025, scaleX: 0.99, duration: 0.45, yoyo: true, repeat: nefes, ease: "sine.inOut", transformOrigin: "50% 100%" }, ir), 0);
+          V.zipla.forEach(function (t) {
+            tl.fromTo("#maskot-ic", { y: 0, rotation: 0 }, Object.assign({ keyframes: { y: [0, -70, 0, -18, 0], rotation: [0, -4, 3, -1, 0] }, duration: 0.55, ease: "none" }, ir), t);
+          });
+          V.ifadeler.forEach(function (f) {
+            document.querySelectorAll("#maskot .ifade").forEach(function (g) { tl.set(g, { opacity: g.id === "ifade-" + f[1] ? 1 : 0 }, f[0]); });
+          });
+          V.paralar.forEach(function (f) {
+            document.querySelectorAll("#maskot .paraseviye").forEach(function (g) { tl.set(g, { opacity: g.id === "para-" + f[1] ? 1 : 0 }, f[0]); });
+          });
+          V.giris.forEach(function (g) {   // [secici, tür, zaman]
+            var el = document.querySelector(g[0]); if (!el) return;
+            var tur = g[1], s = g[2];
+            if (tur === "yukari") tl.fromTo(g[0], { yPercent: 60, opacity: 0 }, Object.assign({ yPercent: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, ir), s);
+            else if (tur === "buyuk") tl.fromTo(g[0], { scale: 1.3, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.45, ease: "expo.out", transformOrigin: "0% 50%" }, ir), s);
+            else if (tur === "zipla") tl.fromTo(g[0], { scale: 0.5, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.32, ease: "back.out(2.5)" }, ir), s);
+            else if (tur === "dus") tl.fromTo(g[0], { y: -40, opacity: 0 }, Object.assign({ y: 0, opacity: 1, duration: 0.35, ease: "back.out(2)" }, ir), s);
+            else if (tur === "pop") tl.fromTo(g[0], { scale: 0.86, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.18, ease: "back.out(2.2)" }, ir), s);
+            else if (tur === "panel") tl.fromTo(g[0], { yPercent: 100 }, Object.assign({ yPercent: 0, duration: 0.55, ease: "expo.out" }, ir), s);
+            else if (tur === "solgun") tl.fromTo(g[0], { opacity: 0, y: 24 }, Object.assign({ opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, ir), s);
+            else if (tur === "salla") tl.fromTo(g[0], { x: 0 }, Object.assign({ keyframes: { x: [0, -16, 13, -9, 5, 0] }, duration: 0.4, ease: "none" }, ir), s);
+            else if (tur === "zipzip") tl.fromTo(g[0], { y: -8 }, Object.assign({ y: 8, duration: 0.3, yoyo: true, repeat: 9, ease: "sine.inOut" }, ir), s);
+            else if (tur === "dolgu") tl.fromTo(g[0], { scaleX: 0 }, Object.assign({ scaleX: 1, duration: 1.1, ease: "power2.out", transformOrigin: "0% 50%" }, ir), s);
+            else if (tur === "para") tl.fromTo(g[0], { y: -260, opacity: 0, rotation: -30 }, Object.assign({ keyframes: { y: [-260, 380, 560], opacity: [0, 1, 0], rotation: [-30, 20, 40] }, duration: 1.4, ease: "none" }, ir), s);
+            else if (tur === "sayac") {
+              var hedef = parseFloat(el.dataset.v), o = { v: 0 };
+              tl.fromTo(g[0], { scale: 0.6, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.4, ease: "back.out(2)", transformOrigin: "0% 50%" }, ir), s);
+              tl.fromTo(o, { v: 0 }, Object.assign({ v: hedef, duration: 1.6, ease: "power2.out", onUpdate: function () { el.textContent = (Math.round(o.v / 50) * 50).toLocaleString("tr-TR") + " ₺"; } }, ir), s);
+              tl.set(el, { textContent: hedef.toLocaleString("tr-TR") + " ₺" }, s + 1.62);
+            }
+          });
+          var yz = { n: 0 }, ic = document.getElementById("yorum-ic"), YZ = V.yorum_yazi;
+          if (ic) tl.fromTo(yz, { n: 0 }, Object.assign({ n: YZ.length, duration: 1.3, ease: "none", onUpdate: function () { ic.textContent = YZ.slice(0, Math.round(yz.n)); } }, ir), Z.kapanis + 2.5);
+          document.querySelectorAll(".yazi .ks").forEach(function (k, i, L) {   // kelime kelime vurgu
+            var t = parseFloat(k.dataset.t), n = L[i + 1], t2 = n && n.closest(".clip") === k.closest(".clip") ? parseFloat(n.dataset.t) : t + 0.45;
+            tl.set(k, { color: "#ffc928" }, t); tl.set(k, { color: "#ffffff" }, Math.max(t + 0.05, t2));
+          });
+          tl.set({}, {}, Z.SON);
+        }
+        var tl = gsap.timeline({ paused: true });
+        tl$(tl);
+        window.__timelines["main"] = tl;
+      })();
+    </script>
+  </body>
+</html>

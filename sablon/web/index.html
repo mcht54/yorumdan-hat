@@ -1,0 +1,308 @@
+<!doctype html>
+<!--
+  Yorumdan Tasarım — WEB SİTESİ bölüm şablonu (otomatik). hat/web.py doldurur: SURE, KATMANLAR, VERI alanları.
+  Site Site Mucidi motoruyla üretilir (yayına alınmaz); yapım dizüstü ekranında: yanlış fotoğraf → doğru fotoğraf, satır satır başlık,
+  düşen hizmet kartları, günün özelliği vurgusu; telefon + dizüstü mockup (üst üste binmez). Ekran dokuları mipmap + derinlik ofsetli.
+-->
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/environments/RoomEnvironment.js"></script>
+    <style>
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-600.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 600; src: url(assets/fonts/inter-latin-ext-600.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-800.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 800; src: url(assets/fonts/inter-latin-ext-800.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-900.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122, U+2212; }
+      @font-face { font-family: Inter; font-weight: 900; src: url(assets/fonts/inter-latin-ext-900.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20C0; }
+      @font-face { font-family: Klasik; font-weight: 700; src: url(assets/fonts/klasik-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Klasik; font-weight: 700; src: url(assets/fonts/klasik-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Guclu; font-weight: 800; src: url(assets/fonts/guclu-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: Samimi; font-weight: 800; src: url(assets/fonts/samimi-lat.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F; }
+      @font-face { font-family: Samimi; font-weight: 800; src: url(assets/fonts/samimi-ext.woff2) format('woff2'); unicode-range: U+0100-0130, U+0132-024F, U+1E00-1EFF; }
+      @font-face { font-family: KomikSans; font-weight: 700; src: url(assets/fonts/comic-bold.ttf) format('truetype'); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #eef1f6; }
+      #root { position: relative; width: 1080px; height: 1920px; font-family: Inter, system-ui, sans-serif; color: #0c0f1a; overflow: hidden; }
+      #sahne { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      .gizli { position: absolute; left: -9999px; top: 0; }
+      .ust { position: absolute; left: 110px; top: 300px; width: 780px; }
+      .etiket { display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px; border-radius: 999px; border: 2px solid #e3122b; background: #fff; color: #e3122b;
+        box-shadow: 0 8px 24px rgba(227, 18, 43, 0.18); font-size: 28px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+      .etiket i { width: 11px; height: 11px; border-radius: 50%; background: #e3122b; display: inline-block; }
+      .etiket.dolu { background: #e3122b; color: #fff; box-shadow: 0 12px 30px rgba(227, 18, 43, 0.35); }
+      .etiket.dolu i { background: #fff; }
+      .baslik { margin-top: 18px; font-size: 76px; font-weight: 900; line-height: 1.04; color: #0c0f1a; }
+      .baslik.kucuk { font-size: 64px; white-space: nowrap; }
+      .baslik b { color: #e3122b; }
+      .cipler { margin-top: 20px; display: flex; gap: 14px; flex-wrap: wrap; }
+      .cip { padding: 12px 24px; border-radius: 999px; background: #fff; border: 1px solid rgba(15,20,40,0.08); box-shadow: 0 14px 30px rgba(15,20,40,0.12); font-size: 34px; font-weight: 800; }
+      .balon { margin-top: 22px; display: flex; gap: 22px; align-items: flex-start; padding: 30px 32px; border-radius: 34px; background: #fff; box-shadow: 0 30px 70px rgba(15, 20, 40, 0.18); border: 1px solid rgba(15, 20, 40, 0.06); }
+      .avatar { flex: none; width: 84px; height: 84px; border-radius: 50%; background: linear-gradient(135deg, #f58529, #dd2a7b 55%, #8134af); padding: 5px; }
+      .avatar span { display: flex; width: 100%; height: 100%; border-radius: 50%; background: #eceef2; border: 4px solid #fff; align-items: center; justify-content: center; font-weight: 900; font-size: 30px; color: #8a8f9c; }
+      .balon-kim { font-size: 28px; font-weight: 700; color: #8a8f9c; margin-bottom: 8px; }
+      .balon-metin { font-size: 46px; font-weight: 800; line-height: 1.16; color: #0c0f1a; }
+      .kalp { flex: none; margin-top: 4px; font-size: 30px; color: #e3122b; font-weight: 800; text-align: center; line-height: 1.1; }
+      .kalp b { display: block; font-size: 44px; }
+      .arac { position: absolute; left: 110px; top: 330px; display: inline-flex; align-items: center; gap: 18px; padding: 18px 28px; border-radius: 22px;
+        background: rgba(255, 255, 255, 0.96); border: 1px solid rgba(15, 20, 40, 0.08); box-shadow: 0 22px 50px rgba(15, 20, 40, 0.16); font-size: 34px; font-weight: 800; white-space: nowrap; color: #0c0f1a; }
+      .arac small { font-size: 28px; font-weight: 600; color: #8a8f9c; letter-spacing: 0.06em; text-transform: uppercase; }
+      .ok { width: 40px; height: 40px; border-radius: 12px; background: #e3122b; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; }
+      .komik { font-family: KomikSans, Inter, sans-serif; color: #c2187a; }
+      .renkler { display: flex; gap: 18px; position: relative; }
+      .renkler i { width: 58px; height: 58px; border-radius: 50%; display: block; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.18); }
+      .halka { position: absolute; left: -7px; top: -7px; width: 72px; height: 72px; border-radius: 50%; border: 4px solid #0c0f1a; }
+      .damga { position: absolute; z-index: 8; left: 140px; top: 720px; width: 720px; text-align: center; padding: 18px 10px; border: 10px solid #e3122b; border-radius: 20px;
+        background: rgba(255, 255, 255, 0.9); color: #e3122b; font-size: 92px; font-weight: 900; letter-spacing: 0.03em; }
+      .yazi { position: absolute; left: 140px; top: 1560px; width: 720px; display: flex; justify-content: center; }
+      .yazi span { display: inline-block; padding: 10px 24px; border-radius: 16px; background: rgba(12, 15, 26, 0.78); color: #fff; font-size: 38px; font-weight: 700; line-height: 1.2; text-align: center; box-shadow: 0 8px 22px rgba(12, 15, 26, 0.18); }
+      .yazi .ks { font-weight: 700; color: rgba(255, 255, 255, 0.6); }
+      .not { margin-top: 12px; font-size: 30px; font-weight: 600; color: #5b6170; }
+      #cta-panel { position: absolute; left: 0; top: 1000px; width: 1080px; height: 920px; border-radius: 64px 64px 0 0; background: linear-gradient(180deg, #e3122b 0%, #a3001a 100%); box-shadow: 0 -30px 80px rgba(163, 0, 26, 0.35); }
+      #yorum-kutu { position: absolute; left: 110px; top: 1060px; width: 780px; display: flex; align-items: center; gap: 20px; padding: 22px 26px; border-radius: 999px; background: #fff; box-shadow: 0 24px 50px rgba(60, 0, 10, 0.35); }
+      #yorum-kutu .av { flex: none; width: 64px; height: 64px; border-radius: 50%; background: #d9dce3; }
+      #yorum-yazi { font-size: 40px; font-weight: 800; color: #0c0f1a; white-space: nowrap; overflow: hidden; }
+      #imlec { display: inline-block; width: 4px; height: 44px; background: #e3122b; margin-left: 4px; vertical-align: middle; }
+      #okb { margin-left: auto; flex: none; width: 66px; height: 66px; border-radius: 50%; background: #e3122b; color: #fff; font-size: 40px; font-weight: 900; display: flex; align-items: center; justify-content: center; }
+      #cta-not { position: absolute; left: 110px; top: 1186px; width: 780px; text-align: center; font-size: 38px; font-weight: 600; color: #ffe3e6; }
+      #cta-not b { color: #fff; font-weight: 900; }
+      #cta-logo { position: absolute; left: 330px; top: 1300px; width: 420px; height: auto; }
+      .kalp2 { position: absolute; font-size: 70px; color: #ff2e45; text-shadow: 0 0 0 #fff, 0 3px 0 #fff, 0 -3px 0 #fff, 3px 0 0 #fff, -3px 0 0 #fff, 0 10px 24px rgba(120,0,20,0.35); }
+      #ozellikler { position: absolute; left: 110px; top: 1070px; width: 800px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+      .oz { display: flex; align-items: center; gap: 14px; padding: 18px 22px; border-radius: 22px; background: #fff; border: 1px solid rgba(15,20,40,0.08); box-shadow: 0 18px 40px rgba(15,20,40,0.14); font-size: 32px; font-weight: 800; white-space: nowrap; }
+      .oz i { flex: none; width: 44px; height: 44px; border-radius: 13px; background: #e3122b; color: #fff; font-style: normal; font-size: 26px; display: flex; align-items: center; justify-content: center; }
+      #flas { position: absolute; inset: 0; background: #fff; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="{{SURE}}" data-width="1080" data-height="1920">
+      <img id="mobil-img" class="gizli" src="assets/mobil.png" alt="" />
+      <img id="tam-img" class="gizli" src="assets/masa-tam.png" alt="" />
+      <img id="taban-img" class="gizli" src="assets/masa-taban.png" alt="" />
+      <img id="yanlis-img" class="gizli" src="assets/yanlis.jpg" alt="" />
+      <canvas id="sahne" class="clip" width="1080" height="1920" data-start="0" data-duration="{{SURE}}" data-track-index="0"></canvas>
+      <div id="ust-golge" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="1" style="position:absolute;left:0;top:0;width:1080px;height:560px;background:linear-gradient(180deg,rgba(244,246,250,0.9) 0%,rgba(244,246,250,0.55) 60%,rgba(244,246,250,0) 100%)"></div>
+{{KATMANLAR}}
+      <div id="flas" class="clip" data-start="0" data-duration="{{SURE}}" data-track-index="30"></div>
+    </div>
+    <script>
+      (function () {
+        window.__timelines = window.__timelines || {};
+        var V = {{VERI}};
+        var Z = V.Z, KU = V.kutu, W = 1080, H = 1920;
+        var mImg = document.getElementById("mobil-img"), tImg = document.getElementById("tam-img"), bImg = document.getElementById("taban-img"), yImg = document.getElementById("yanlis-img");
+        function kar(a, b, u) { var o = {}; for (var k in a) o[k] = a[k] + (b[k] - a[k]) * u; return o; }
+        function io(u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+        function cik(u) { return 1 - Math.pow(1 - u, 3); }
+        function sn(u) { return Math.max(0, Math.min(1, u)); }
+        function aral(t, a, b) { return sn((t - a) / (b - a)); }
+
+        // ---------- 3B stüdyo ----------
+        var renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("sahne"), antialias: true, preserveDrawingBuffer: true });
+        renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+        renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+        renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        var scene = new THREE.Scene(); scene.fog = new THREE.Fog(0xc4c9d2, 22, 60);
+        var bg = document.createElement("canvas"); bg.width = 8; bg.height = 512; var bc = bg.getContext("2d"); var gr = bc.createLinearGradient(0, 0, 0, 512);
+        gr.addColorStop(0, "#f4f5f8"); gr.addColorStop(0.55, "#dfe3ea"); gr.addColorStop(1, "#c9ced8"); bc.fillStyle = gr; bc.fillRect(0, 0, 8, 512);
+        var bgT = new THREE.CanvasTexture(bg); bgT.encoding = THREE.sRGBEncoding; scene.background = bgT;
+        scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+        var camera = new THREE.PerspectiveCamera(30, W / H, 1.0, 80);
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xb9c1d0, 0.45));
+        var ana = new THREE.DirectionalLight(0xffffff, 1.5); ana.position.set(-4, 9, 6); ana.castShadow = true; ana.shadow.mapSize.set(2048, 2048); ana.shadow.radius = 9; ana.shadow.bias = -0.0004;
+        Object.assign(ana.shadow.camera, { left: -7, right: 7, top: 7, bottom: -7, near: 1, far: 30 }); scene.add(ana);
+        var dolgu = new THREE.DirectionalLight(0xdfe8ff, 0.5); dolgu.position.set(5, 3, 4); scene.add(dolgu);
+        var supurge = new THREE.PointLight(0xffffff, 0, 6); scene.add(supurge);
+        var zemin = new THREE.Mesh(new THREE.PlaneGeometry(90, 90), new THREE.MeshStandardMaterial({ color: 0xb8bec9, roughness: 0.95 })); zemin.rotation.x = -Math.PI / 2; zemin.position.y = -1.9; zemin.receiveShadow = true; scene.add(zemin);
+        function dokuYap(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter; t.generateMipmaps = true; t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return { c: c, x: c.getContext("2d"), t: t }; }
+        var tel, lap;
+        var telMat = new THREE.MeshBasicMaterial({ toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 }), lapMat = new THREE.MeshBasicMaterial({ toneMapped: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 });
+        function planarUv(mesh) { var g = mesh.geometry; g.computeBoundingBox(); var bb = g.boundingBox; var p = g.attributes.position; var w = bb.max.x - bb.min.x || 1, h = bb.max.y - bb.min.y || 1; var uv = new Float32Array(p.count * 2);
+          for (var i = 0; i < p.count; i++) { uv[i * 2] = (p.getX(i) - bb.min.x) / w; uv[i * 2 + 1] = (p.getY(i) - bb.min.y) / h; } g.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return w / h; }
+        function onuOneCevir(m, onAd, arkaAd) { m.updateWorldMatrix(true, true); var on = m.getObjectByName(onAd), ar = m.getObjectByName(arkaAd);
+          if (on && ar) { var a = new THREE.Vector3(), b = new THREE.Vector3(); on.getWorldPosition(a); ar.getWorldPosition(b); if (a.z < b.z) m.rotation.y += Math.PI; } }
+        var telGrp = new THREE.Group(), lapGrp = new THREE.Group(); scene.add(telGrp); scene.add(lapGrp);
+
+        // ---------- ekran çizimi ----------
+        function yd(x, X, y, w, h, r) { x.beginPath(); x.moveTo(X + r, y); x.arcTo(X + w, y, X + w, y + h, r); x.arcTo(X + w, y + h, X, y + h, r); x.arcTo(X, y + h, X, y, r); x.arcTo(X, y, X + w, y, r); x.closePath(); }
+        function imlecCiz(x, cx, cy, s) { x.save(); x.translate(cx, cy); x.scale(s, s); x.lineJoin = "round"; x.fillStyle = "#14161c"; x.strokeStyle = "#fff"; x.lineWidth = 5;
+          x.beginPath(); x.moveTo(0, 0); x.lineTo(0, 46); x.lineTo(12, 35); x.lineTo(21, 54); x.lineTo(29, 50); x.lineTo(20, 32); x.lineTo(36, 31); x.closePath(); x.stroke(); x.fill(); x.restore(); }
+        function acilis(x, cw, ch, p, masa) {   // Site Mucidi'nde yeni site hazırlanıyor
+          x.fillStyle = "#f6f7f9"; x.fillRect(0, 0, cw, ch); var k = masa ? 1 : 1.6;
+          x.fillStyle = "#e3122b"; yd(x, cw / 2 - 60 * k, ch * 0.34 - 60 * k, 120 * k, 120 * k, 30 * k); x.fill();
+          x.fillStyle = "#fff"; x.font = "900 " + Math.round(70 * k) + "px Inter"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText("S", cw / 2, ch * 0.34 + 4 * k);
+          x.fillStyle = "#14161c"; x.font = "900 " + Math.round(46 * k) + "px Inter"; x.fillText("Site Mucidi", cw / 2, ch * 0.34 + 130 * k);
+          x.fillStyle = "#6b7080"; x.font = "600 " + Math.round(28 * k) + "px Inter"; x.fillText("Yeni site hazırlanıyor: " + V.firma, cw / 2, ch * 0.34 + 190 * k);
+          x.fillStyle = "#e3e5ea"; yd(x, cw / 2 - 240 * k, ch * 0.34 + 240 * k, 480 * k, 16 * k, 8 * k); x.fill();
+          x.fillStyle = "#e3122b"; yd(x, cw / 2 - 240 * k, ch * 0.34 + 240 * k, Math.max(16, 480 * k * p), 16 * k, 8 * k); x.fill(); x.textBaseline = "alphabetic";
+        }
+        var sonTel = "";
+        function telEkran(t) {
+          if (!tel) return;
+          var cw = tel.c.width, ch = tel.c.height, x = tel.x, d = "site", kay = 300, p = 0;
+          if (t >= Z.T && t < Z.K0) { d = "acilis"; p = Math.round(aral(t, Z.T, Z.K0) * 40) / 40; }
+          else if (t >= Z.CI) kay = Math.round(300 + 900 * sn((t - Z.CI) / 7));
+          var a = d + kay + p; if (a === sonTel) return; sonTel = a;
+          if (d === "acilis") acilis(x, cw, ch, p, false);
+          else { x.fillStyle = "#fff"; x.fillRect(0, 0, cw, ch); var hh = Math.min(ch, mImg.naturalHeight - kay); x.drawImage(mImg, 0, kay, mImg.naturalWidth, hh, 0, 0, cw, hh); }
+          tel.t.needsUpdate = true;
+        }
+        function sayfa(x, img, sy, LH) { x.drawImage(img, 0, sy, 1440, LH, 0, 0, 1440, LH); }
+        function parca(x, r, sy, ox, oy, a, s, rot, kaynak) {
+          if (a <= 0 || !r) return;
+          x.save(); x.globalAlpha = a; x.translate(r.x + r.w / 2 + ox, r.y - sy + r.h / 2 + oy); x.rotate(rot || 0); x.scale(s, s);
+          yd(x, -r.w / 2, -r.h / 2, r.w, r.h, kaynak ? 24 : 18); x.clip();
+          if (kaynak) { var k = Math.max(r.w / kaynak.naturalWidth, r.h / kaynak.naturalHeight), w = kaynak.naturalWidth * k, h = kaynak.naturalHeight * k; x.drawImage(kaynak, -w / 2, -h / 2, w, h); }
+          else x.drawImage(tImg, r.x, r.y, r.w, r.h, -r.w / 2, -r.h / 2, r.w, r.h);
+          x.restore(); x.globalAlpha = 1;
+        }
+        function satirYaz(x, r, sy, p, t) {
+          if (p <= 0 || !r) return;
+          var adim = Math.max(8, r.h * 0.42), w = Math.min(r.w, Math.ceil(r.w * p / adim) * adim);
+          x.drawImage(tImg, r.x, r.y, w, r.h, r.x, r.y - sy, w, r.h);
+          if (p < 1 && Math.floor(t * 4) % 2 === 0) { x.fillStyle = "#2f80ff"; x.fillRect(r.x + w + 3, r.y - sy + r.h * 0.12, Math.max(3, r.h * 0.06), r.h * 0.76); }
+        }
+        function bos(x, sy) {
+          var r = KU.img; if (!r) return; x.fillStyle = "#eef0f3"; yd(x, r.x, r.y - sy, r.w, r.h, 24); x.fill();
+          x.strokeStyle = "#b9bec8"; x.lineWidth = 4; x.setLineDash([18, 12]); yd(x, r.x + 12, r.y - sy + 12, r.w - 24, r.h - 24, 18); x.stroke(); x.setLineDash([]);
+          x.fillStyle = "#8a909c"; x.font = "800 30px Inter"; x.textAlign = "center"; x.fillText("+ Kapak fotoğrafı", r.x + r.w / 2, r.y - sy + r.h / 2 + 10);
+        }
+        var sonLap = "";
+        function lapEkran(t) {
+          if (!lap) return;
+          var cw = lap.c.width, ch = lap.c.height, x = lap.x, LH = ch;
+          var canli = t >= Z.T && t < Z.SON;
+          var anahtar = !canli ? "son0" : "c" + Math.round(t * 30);
+          if (anahtar === sonLap) return; sonLap = anahtar;
+          if (anahtar === "son0") { sayfa(x, tImg, 0, LH); lap.t.needsUpdate = true; return; }
+          var I = KU.img, imx = null, imy = null;
+          if (t < Z.K0) { acilis(x, cw, ch, Math.round(aral(t, Z.T, Z.K0) * 40) / 40, true); lap.t.needsUpdate = true; return; }
+          if (t < Z.I0) {
+            sayfa(x, bImg, 0, LH);
+            var kb = Math.min(Z.K2 - 0.7, Z.K1 + 2.2);
+            if (t < Z.K1) { bos(x, 0); var u0 = io(aral(t, Z.K0 + 0.2, Z.K1)); if (I) { imx = I.x + I.w + 200 - 150 * u0; imy = I.y + I.h + 120 - 260 * u0; } }
+            else if (t < kb) { var u1 = cik(aral(t, Z.K1, Z.K1 + 0.7)); parca(x, I, 0, 640 * (1 - u1), 260 * (1 - u1), 1, 0.86 + 0.14 * u1, 0, yImg); if (I && u1 < 1) { imx = I.x + 90 + 640 * (1 - u1); imy = I.y + 90 + 260 * (1 - u1); } }
+            else if (t < Z.K2) { bos(x, 0); var u2 = aral(t, kb, kb + 0.65); if (u2 < 1) { parca(x, I, 0, 900 * u2 * u2, -120 * u2, 1 - u2 * 0.6, 1, 0.5 * u2, yImg); if (I) { imx = I.x + 90 + 900 * u2 * u2; imy = I.y + 90 - 120 * u2; } } }
+            else { var u3 = cik(aral(t, Z.K2, Z.K2 + 0.75)); parca(x, I, 0, -900 * (1 - u3), 200 * (1 - u3), 1, 0.86 + 0.14 * u3, 0); if (I && u3 < 1) { imx = I.x + 90 - 900 * (1 - u3); imy = I.y + 90 + 200 * (1 - u3); } }
+            var yz = Math.max(Z.B0, Z.K2 + 0.8), sure = Math.max(1.4, Math.min(3.0, Z.I0 - yz - 0.3)), sat = KU.h1.concat(KU.p), adim = sure / Math.max(1, sat.length + 1);
+            sat.forEach(function (r, i) { satirYaz(x, r, 0, aral(t, yz + i * adim, yz + (i + 1) * adim), t); });
+            KU.btn.forEach(function (bt, i) { var s0 = yz + sat.length * adim + i * 0.12, u = aral(t, s0, s0 + 0.3); if (u > 0) { var c1 = 1.9, c3 = c1 + 1, bb = 1 + c3 * Math.pow(u - 1, 3) + c1 * Math.pow(u - 1, 2); parca(x, bt, 0, 0, 0, Math.min(1, u * 3), 0.4 + 0.6 * bb, 0); } });
+          } else if (t < Z.O0) {
+            var sy = Math.round(V.hizmet_sy * io(aral(t, Z.I0, Z.I0 + 1.0)));
+            sayfa(x, tImg, sy, LH);
+            if (KU.hizmet) x.drawImage(bImg, 0, KU.hizmet.y, 1440, KU.hizmet.h, 0, KU.hizmet.y - sy, 1440, KU.hizmet.h);
+            KU.kart.forEach(function (k, i) { var s0 = Z.I0 + 0.7 + 0.26 * i, u = cik(aral(t, s0, s0 + 0.4)); parca(x, k, sy, 0, -90 * (1 - u), u, 1, 0); });
+          } else if (t < Z.CI) {
+            var hs = V.hizmet_sy, os = V.ozellik.sy, sy2 = Math.round(hs + (os - hs) * io(aral(t, Z.O0, Z.O0 + 1.0)));
+            sayfa(x, tImg, sy2, LH);
+            var R = V.ozellik.rect, up = cik(aral(t, Z.O0 + 0.9, Z.O0 + 1.3));
+            if (R && up > 0) { x.strokeStyle = "rgba(227,18,43," + up.toFixed(2) + ")"; x.lineWidth = 10; yd(x, R.x + 20, R.y - sy2 + 10, R.w - 40, Math.min(R.h - 20, LH - (R.y - sy2) - 30), 26); x.stroke();
+              imx = R.x + R.w - 220; imy = R.y - sy2 + 120; }
+          } else { sayfa(x, tImg, Math.round(700 * io(aral(t, Z.CI, Z.SON))), LH); }
+          if (imx !== null) imlecCiz(x, imx, imy, 1.5);
+          lap.t.needsUpdate = true;
+        }
+
+        // ---------- zaman → 3B ----------
+        var LY = -1.02, EKR = new THREE.Vector3(0, 1, 0), EW = 3.2;
+        function LAPM() { return { x: -1.05, y: LY, z: -1.1, ry: 0.24 }; }
+        function LAPON() { return { x: 0, y: LY, z: 0, ry: 0 }; }
+        var TELM = { x: 2.15, y: -0.877, z: 1.0, rx: 0.02, ry: -0.34, s: 0.62 }, TEL_YOK = { x: 7, y: -0.877, z: 1.0, rx: 0.02, ry: -0.34, s: 0.62 };
+        var VURUS = [Z.K1, Z.K2, Z.O0];
+        function yakinKamera(t) { var D = EW / 0.92 / 0.3007, cx = EKR.x, cy = LY + EKR.y, cz = EKR.z, dr = sn((t - Z.K0) / Math.max(1, Z.CI - Z.K0));
+          return { x: cx + 0.35 * Math.sin(dr * 5), y: cy + 0.55 + 0.15 * Math.cos(dr * 4), z: cz + D, hx: cx, hy: cy - 0.05, hz: cz }; }
+        function genel(a, R, y, hy) { return { x: -0.2 + R * Math.sin(a), y: y, z: -0.2 + R * Math.cos(a), hx: -0.2, hy: hy, hz: -0.2 }; }
+        function durum(t) {
+          var k, tl = Object.assign({}, TELM), lp = LAPM();
+          if (t < Z.T) {
+            var d1 = aral(t, 0, 0.45), d2 = aral(t, 0.4, 0.85);
+            lp.y = LY + 4.5 * (1 - d1 * d1); lp.ry = 0.24 - 1.8 * (1 - cik(d1));
+            tl.y = TELM.y + 5 * (1 - d2 * d2); tl.ry = TELM.ry - 3 * (1 - cik(d2)); if (t < 0.4) tl.y = 30;
+            k = genel(-0.16 + 0.12 * io(aral(t, 0, Z.T)), 23 - 1.2 * cik(aral(t, 0, Z.T)), 1.6, -0.45);
+            [0.45, 0.85].forEach(function (c) { if (t > c && t < c + 0.45) { var s = 0.13 * Math.exp(-(t - c) * 10) * Math.sin((t - c) * 70); k.x += s; k.y += s * 0.6; } });
+          } else if (t < Z.K0) {
+            k = genel(-0.25 + 0.42 * io(aral(t, Z.T, Z.K0)), 23.5, 1.6, -0.5);
+          } else if (t < Z.CI) {
+            var g = cik(aral(t, Z.K0, Z.K0 + 0.7)); lp = kar(LAPM(), LAPON(), g); tl = kar(TELM, TEL_YOK, g);
+            k = kar(genel(0.17, 23.5, 1.6, -0.5), yakinKamera(t), g);
+          } else if (t < Z.H) {
+            var g2 = cik(aral(t, Z.CI, Z.CI + 0.9)); lp = kar(LAPON(), LAPM(), g2); tl = kar(TEL_YOK, TELM, g2);
+            k = kar(yakinKamera(Z.CI), genel(-0.2 + 0.15 * io(aral(t, Z.CI, Z.H)), 22, 1.6, -0.5), g2);
+          } else {
+            var a6 = -0.12 + 0.3 * io(aral(t, Z.H, Z.SON)), cta = io(aral(t, Z.C, Z.C + 0.9));
+            k = genel(a6, 24.5 + 1.5 * cta, 1.5, -1.45 - 0.52 * cta);
+          }
+          var it = 0; VURUS.forEach(function (v) { if (t >= v && t < v + 0.6) it = Math.max(it, 0.35 * Math.exp(-(t - v) * 7)); });
+          return { k: k, tl: tl, lp: lp, it: it };
+        }
+        function ciz(t) {
+          var d = durum(t);
+          var yon = new THREE.Vector3(d.k.hx - d.k.x, d.k.hy - d.k.y, d.k.hz - d.k.z).normalize();
+          camera.position.set(d.k.x + yon.x * d.it, d.k.y + yon.y * d.it, d.k.z + yon.z * d.it); camera.lookAt(d.k.hx, d.k.hy, d.k.hz);
+          telGrp.position.set(d.tl.x, d.tl.y, d.tl.z); telGrp.rotation.set(d.tl.rx, d.tl.ry, 0); telGrp.scale.setScalar(d.tl.s); telGrp.visible = d.tl.x < 6.5 && d.tl.y < 20;
+          lapGrp.position.set(d.lp.x, d.lp.y, d.lp.z); lapGrp.rotation.y = d.lp.ry;
+          var sw = 0, sx = 0;
+          [[Z.T, 1], [Z.K0, 1], [Z.CI, 1.3], [Z.H, 1.3]].forEach(function (c) { var u = (t - c[0]) / 0.7; if (u >= 0 && u < 1) { sw = 14 * c[1] * Math.sin(Math.PI * u); sx = -3 + 6 * u; } });
+          supurge.intensity = sw; supurge.position.set(sx, 1.2, 2.5);
+          telEkran(t); lapEkran(t);
+          renderer.render(scene, camera);
+        }
+        function kur() {
+          var tl = gsap.timeline({ paused: true, onUpdate: function () { ciz(tl.time()); } });
+          var ir = { immediateRender: false };
+          V.flaslar.forEach(function (f) { tl.fromTo("#flas", { opacity: f[1] }, Object.assign({ opacity: 0, duration: 0.22, ease: "power2.out" }, ir), f[0]); });
+          V.giris.forEach(function (g) {
+            var e = document.querySelector(g[0]); if (!e) return;
+            var tur = g[1], s = g[2];
+            if (tur === "yukari") tl.fromTo(g[0], { yPercent: 60, opacity: 0 }, Object.assign({ yPercent: 0, opacity: 1, duration: 0.4, ease: "expo.out" }, ir), s);
+            else if (tur === "buyuk") tl.fromTo(g[0], { scale: 1.3, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.45, ease: "expo.out", transformOrigin: "0% 50%" }, ir), s);
+            else if (tur === "zipla") tl.fromTo(g[0], { scale: 0.5, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2.5)" }, ir), s);
+            else if (tur === "dus") tl.fromTo(g[0], { y: -30, opacity: 0 }, Object.assign({ y: 0, opacity: 1, duration: 0.35, ease: "back.out(2)" }, ir), s);
+            else if (tur === "damga") { tl.set(g[0], { rotation: -9 }, 0); tl.fromTo(g[0], { scale: 2.4, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, rotation: -9, duration: 0.22, ease: "power4.in" }, ir), s); }
+            else if (tur === "pop") tl.fromTo(g[0], { scale: 0.86, opacity: 0 }, Object.assign({ scale: 1, opacity: 1, duration: 0.18, ease: "back.out(2.2)" }, ir), s);
+            else if (tur === "panel") tl.fromTo(g[0], { yPercent: 100 }, Object.assign({ yPercent: 0, duration: 0.55, ease: "expo.out" }, ir), s);
+            else if (tur === "solgun") tl.fromTo(g[0], { opacity: 0, y: 24 }, Object.assign({ opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, ir), s);
+            else if (tur === "salla") tl.fromTo(g[0], { x: 0 }, Object.assign({ keyframes: { x: [0, -16, 13, -9, 5, 0] }, duration: 0.4, ease: "none" }, ir), s);
+            else if (tur === "kalp") tl.fromTo(g[0], { y: 0, opacity: 0, scale: 0.4 }, Object.assign({ keyframes: { y: [0, -160, -340], opacity: [0, 1, 0], scale: [0.4, 1.1, 0.9] }, duration: 1.7, ease: "none" }, ir), s);
+            else if (tur === "gizle") tl.set(g[0], { display: "none" }, s);
+            else if (tur === "goster") tl.set(g[0], { display: "inline-flex" }, s);
+            else if (tur === "zipzip") tl.fromTo(g[0], { y: -8 }, Object.assign({ y: 8, duration: 0.3, yoyo: true, repeat: 11, ease: "sine.inOut" }, ir), s);
+          });
+          var yz = { n: 0 }, ic = document.getElementById("yorum-ic"), YZ = "Firma adı + sektör";
+          if (ic) tl.fromTo(yz, { n: 0 }, Object.assign({ n: YZ.length, duration: 1.3, ease: "none", onUpdate: function () { ic.textContent = YZ.slice(0, Math.round(yz.n)); } }, ir), Z.C + 4.6);
+          tl.set({}, {}, Z.SON);
+          ciz(0);
+          document.querySelectorAll(".yazi .ks").forEach(function (k, i, L) {   // kelime kelime vurgu (karaoke)
+            var t = parseFloat(k.dataset.t), n = L[i + 1], t2 = n && n.closest(".clip") === k.closest(".clip") ? parseFloat(n.dataset.t) : t + 0.45;
+            tl.set(k, { color: "#ffd84d" }, t); tl.set(k, { color: "#ffffff" }, Math.max(t + 0.05, t2));
+          });
+          window.__timelines["main"] = tl;
+        }
+        function yukle(url) { return new Promise(function (r) { new THREE.GLTFLoader().load(url, r); }); }
+        function resim(img) { return img.complete && img.naturalWidth ? Promise.resolve() : new Promise(function (r) { img.onload = r; img.onerror = r; }); }
+        var fontlar = ["600 28px Inter", "800 30px Inter", "900 46px Inter"].map(function (f) { return document.fonts.load(f, V.firma + " ŞİĞÜÖÇ"); });
+        Promise.all([yukle("assets/iphone.glb"), yukle("assets/macbook.glb"), resim(mImg), resim(tImg), resim(bImg), resim(yImg)].concat(fontlar)).then(function (s) {
+          var m = s[0].scene, b = new THREE.Box3().setFromObject(m), sz = b.getSize(new THREE.Vector3());
+          m.scale.setScalar(3.3 / sz.y); b.setFromObject(m); m.position.sub(b.getCenter(new THREE.Vector3())); var oran = 0.46;
+          m.traverse(function (c) { if (!c.isMesh) return; if (c.name.indexOf("front-glass") === 0) { oran = planarUv(c); c.material = telMat; return; } c.castShadow = true;
+            var mt = c.material; if (mt && mt.color && mt.color.r > mt.color.b + 0.15) { mt = mt.clone(); mt.color.set(0x2a2c31); mt.metalness = 0.85; mt.roughness = 0.28; c.material = mt; } });
+          tel = dokuYap(780, Math.round(780 / oran)); telMat.map = tel.t; telMat.needsUpdate = true; onuOneCevir(m, "front-glass", "rear-window"); telGrp.add(m);
+          var l = s[1].scene, lb = new THREE.Box3().setFromObject(l), ls = lb.getSize(new THREE.Vector3());
+          l.scale.setScalar(3.6 / Math.max(ls.x, ls.z)); lb.setFromObject(l); l.position.sub(lb.getCenter(new THREE.Vector3()));
+          lb.setFromObject(l); LY = -1.9 - lb.min.y;
+          var lOran = 1.6, ekranMesh = null;
+          l.traverse(function (c) { if (c.isMesh) c.castShadow = true; if (c.isMesh && c.name.replace(/\.\d+$/, "") === "display") { lOran = planarUv(c); c.material = lapMat; ekranMesh = c; } });
+          lap = dokuYap(1440, Math.round(1440 / lOran)); lapMat.map = lap.t; lapMat.needsUpdate = true;
+          onuOneCevir(l, "display", "apple-logo"); lapGrp.add(l); lapGrp.updateMatrixWorld(true);
+          if (ekranMesh) { var eb = new THREE.Box3().setFromObject(ekranMesh); eb.getCenter(EKR); EW = eb.getSize(new THREE.Vector3()).x; }
+          kur();
+        });
+      })();
+    </script>
+  </body>
+</html>

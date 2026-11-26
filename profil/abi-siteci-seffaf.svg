@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080">
+<defs>
+ <radialGradient id="bg" cx="50%" cy="36%" r="75%"><stop offset="0" stop-color="#f2283f"/><stop offset="1" stop-color="#b30a1d"/></radialGradient>
+ <filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#5a0010" flood-opacity=".45"/></filter>
+</defs>
+
+<g transform="translate(300 365) rotate(-8) scale(.82)" filter="url(#g)">
+ <rect x="-170" y="-120" width="340" height="250" rx="22" fill="#fff"/>
+ <path d="M-170 -98 a22 22 0 0 1 22 -22 h296 a22 22 0 0 1 22 22 v34 h-340z" fill="#1d1f27"/>
+ <circle cx="-140" cy="-92" r="8" fill="#ff5f57"/><circle cx="-115" cy="-92" r="8" fill="#febc2e"/><circle cx="-90" cy="-92" r="8" fill="#28c840"/>
+ <rect x="-145" y="-40" width="150" height="20" rx="10" fill="#e3122b"/>
+ <rect x="-145" y="-8" width="230" height="12" rx="6" fill="#c9ccd4"/>
+ <rect x="-145" y="14" width="190" height="12" rx="6" fill="#c9ccd4"/>
+ <rect x="-145" y="44" width="90" height="56" rx="8" fill="#ffd2d7"/><rect x="-45" y="44" width="90" height="56" rx="8" fill="#d9dce3"/><rect x="55" y="44" width="90" height="56" rx="8" fill="#d9dce3"/>
+</g>
+<!-- gövde -->
+<path d="M250 1080 C 260 860, 370 790, 540 785 C 710 790, 820 860, 830 1080 Z" fill="#1d1f27"/>
+<path d="M470 788 L540 870 L610 788 Z" fill="#ffffff"/>
+<path d="M486 790 L540 852 L594 790 Z" fill="#e3ad80"/>
+<!-- boyun -->
+<rect x="490" y="690" width="100" height="110" rx="30" fill="#e3ad80"/>
+<!-- kulaklar -->
+<ellipse cx="372" cy="520" rx="34" ry="48" fill="#f3c9a1"/><ellipse cx="708" cy="520" rx="34" ry="48" fill="#f3c9a1"/>
+<ellipse cx="376" cy="522" rx="15" ry="26" fill="#e3ad80"/><ellipse cx="704" cy="522" rx="15" ry="26" fill="#e3ad80"/>
+<!-- yüz -->
+<path d="M385 420 C 385 300, 695 300, 695 420 L 695 560 C 695 690, 620 745, 540 745 C 460 745, 385 690, 385 560 Z" fill="#f3c9a1"/>
+<!-- saç -->
+<path d="M372 470 C 350 330, 430 255, 545 255 C 660 255, 735 320, 712 470 C 700 420, 690 395, 668 380 C 610 400, 520 395, 450 360 C 420 380, 395 410, 372 470 Z" fill="#2a1c15"/>
+<path d="M450 360 C 500 330, 560 318, 640 340" stroke="#4a3328" stroke-width="10" fill="none" stroke-linecap="round" opacity=".7"/>
+<!-- kaşlar -->
+<path d="M430 468 Q 470 448 512 462" stroke="#2a1c15" stroke-width="22" fill="none" stroke-linecap="round"/>
+<path d="M568 462 Q 610 448 650 468" stroke="#2a1c15" stroke-width="22" fill="none" stroke-linecap="round"/>
+<!-- gözlük -->
+<circle cx="472" cy="525" r="50" fill="#ffffff" fill-opacity=".18" stroke="#1d1f27" stroke-width="12"/>
+<circle cx="608" cy="525" r="50" fill="#ffffff" fill-opacity=".18" stroke="#1d1f27" stroke-width="12"/>
+<path d="M522 520 Q 540 508 558 520" stroke="#1d1f27" stroke-width="10" fill="none"/>
+<path d="M422 515 L 392 505 M658 515 L 688 505" stroke="#1d1f27" stroke-width="10" stroke-linecap="round"/>
+<!-- gözler -->
+<circle cx="476" cy="530" r="15" fill="#1d1f27"/><circle cx="604" cy="530" r="15" fill="#1d1f27"/>
+<circle cx="481" cy="524" r="5" fill="#fff"/><circle cx="609" cy="524" r="5" fill="#fff"/>
+<!-- burun -->
+<path d="M540 545 C 525 585, 520 600, 545 606" stroke="#e3ad80" stroke-width="12" fill="none" stroke-linecap="round"/>
+<!-- yanak -->
+<circle cx="440" cy="610" r="26" fill="#f08f7f" opacity=".45"/><circle cx="640" cy="610" r="26" fill="#f08f7f" opacity=".45"/>
+<!-- bıyık -->
+<path d="M540 628 C 510 600, 445 605, 420 650 C 450 640, 470 660, 500 662 C 520 664, 533 655, 540 646 C 547 655, 560 664, 580 662 C 610 660, 630 640, 660 650 C 635 605, 570 600, 540 628 Z" fill="#2a1c15"/>
+<!-- gülüş -->
+<path d="M498 678 Q 540 712 582 678" stroke="#8a3b2e" stroke-width="12" fill="none" stroke-linecap="round"/>
+<!-- kol + el + kalem -->
+<path d="M780 1080 C 800 960, 820 880, 835 800" stroke="#1d1f27" stroke-width="120" fill="none" stroke-linecap="round"/>
+<g transform="translate(842 700) rotate(22)">
+ <path d="M-14 -230 L14 -230 L0 -290 Z" fill="#c8ccd6"/><path d="M-5 -268 L5 -268 L0 -290 Z" fill="#1d1f27"/>
+ <rect x="-14" y="-232" width="28" height="270" rx="6" fill="#1d1f27"/>
+ <rect x="-14" y="-150" width="28" height="12" fill="#e3122b"/>
+ <rect x="-14" y="10" width="28" height="40" rx="8" fill="#ffffff"/>
+</g>
+<g transform="translate(838 720)">
+ <rect x="-62" y="-70" width="124" height="130" rx="52" fill="#f3c9a1"/>
+ <path d="M-40 -40 h70 M-44 -6 h76 M-40 26 h70" stroke="#e3ad80" stroke-width="9" stroke-linecap="round"/>
+ <ellipse cx="-52" cy="-30" rx="26" ry="40" fill="#f3c9a1" transform="rotate(-25 -52 -30)"/>
+</g>
+</svg>

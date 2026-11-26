@@ -1,0 +1,31 @@
+{
+ "mod": "canli",
+ "_mod_aciklama": "deneme: üretir, PAYLAŞMAZ (cikti/ klasörüne koyar). canli: üretir ve Instagram'a paylaşır.",
+ "hesaplar": {
+  "kartvizit": {
+   "aktif": true,
+   "ig_kullanici": "kartvizitci.tr",
+   "ortak": [
+    "mchttasarim"
+   ]
+  },
+  "web": {
+   "aktif": true,
+   "ig_kullanici": "siteci.abi",
+   "ortak": [
+    "mchttasarim",
+    "sitemucidi"
+   ]
+  },
+  "para": {
+   "aktif": true,
+   "ig_kullanici": "cuzdanhocasi",
+   "ortak": [],
+   "ilk_yorum": "Yarının bütçesi bu videonun yorumlarından seçilecek: maaşını, kiranı ve şehrini yaz. En çok beğeni alan kazanır."
+  }
+ },
+ "ilk_yorum": "Yarının firması bu videonun yorumlarından seçilecek: firma adı + sektör + şehir yaz. En çok beğeni alan kazanır.",
+ "tebrik": "Tebrikler! Bugünkü bölüm sizin: {link} Tasarım vitrinimizde; isterseniz DM'den bize yazın.",
+ "ai_etiketi": true,
+ "_ai_etiketi_aciklama": "Meta, gerçekçi yapay zekâ seslendirmesinde 'AI info' etiketini istiyor. Karar Mücahit'te: true olunca açıklamaya not eklenir; Graph API etiket alanı yok, uygulamadan işaretlenir."
+}

@@ -1,0 +1,8 @@
+[
+ {"kod": "galeri", "ad": "fotoğraf galerisi", "cip": "Fotoğraf galerisi", "acilis": "Sayfa galeriye kayar; fotoğraflar ızgarada belirir ve kırmızı çerçeveyle vurgulanır.", "uygun": ["restoran-kafe", "guzellik-bakim", "insaat-yapi", "etkinlik-organizasyon", "mobilya-dekorasyon", "turizm-konaklama", "otomotiv"]},
+ {"kod": "urunler", "ad": "ürün kataloğu", "cip": "Ürün kataloğu", "acilis": "Sayfa ürünlere kayar; ürün kartları fiyat alanlarıyla dizilir.", "uygun": ["urun-katalogu", "e-ticaret", "otomotiv", "restoran-kafe", "mobilya-dekorasyon"]},
+ {"kod": "sss", "ad": "sık sorulan sorular", "cip": "Sık sorulan sorular", "acilis": "Sayfa soru-cevap bölümüne kayar; müşterinin aklındaki sorular tek tek görünür.", "uygun": ["guzellik-bakim", "dis-klinigi", "saglik-klinik", "egitim-kurs", "hukuk-profesyonel", "temizlik", "nakliyat"]},
+ {"kod": "iletisim", "ad": "harita ve iletişim", "cip": "Harita + iletişim", "acilis": "Sayfa iletişim bölümüne kayar; adres ve harita alanı vurgulanır.", "uygun": ["yerel-hizmet", "tesisat", "otomotiv", "veteriner", "restoran-kafe", "taksi"]},
+ {"kod": "surec", "ad": "adım adım süreç", "cip": "Adım adım süreç", "acilis": "Sayfa süreç bölümüne kayar; hizmetin adımları sırayla görünür.", "uygun": ["insaat-yapi", "nakliyat", "danismanlik", "lojistik", "temizlik", "kurumsal-firma"]},
+ {"kod": "hakkimizda", "ad": "hakkımızda bölümü", "cip": "Hakkımızda", "acilis": "Sayfa hakkımızda bölümüne kayar; işletmenin hikâyesi fotoğrafla birlikte görünür.", "uygun": ["kurumsal-firma", "sanayi-uretim", "kisisel-portfoy", "okul", "kres-anaokulu"]}
+]
