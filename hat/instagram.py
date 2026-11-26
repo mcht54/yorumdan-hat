@@ -81,6 +81,7 @@ class Instagram:
         raise InstagramHatasi("işleme zaman aşımı")
 
     def reels(self, video: Path, aciklama: str, ortaklar: list[str] | None = None, kapak_ms: int = 300) -> dict:
+        aciklama = aciklama_denetle(aciklama)
         alan = dict(media_type="REELS", caption=aciklama, share_to_feed="true", thumb_offset=str(kapak_ms))
         if ortaklar:  # ortak gönderi daveti (API'de en çok 3 kullanıcı adı)
             alan["collaborators"] = str(ortaklar[:3]).replace("'", '"')
@@ -111,7 +112,34 @@ class Instagram:
         return b
 
 
+
+_DENETLENMIS: dict = {}
+
+
+def aciklama_denetle(metin: str, platform: str = "instagram") -> str:
+    """Ortak açıklama denetçisi (2026-11-27): TDK yazım, kesik satır, soru işareti, 3-5 hashtag. Aynı metin bir kez
+    denetlenir (IG/FB/YT aynı açıklamayı kullanır). Hata paylaşımı durdurmaz."""
+    if metin in _DENETLENMIS:
+        return _DENETLENMIS[metin]
+    try:
+        import json as _json
+        import aciklama_denetim as ad
+        import ortak
+        r = ad.denetle(metin, platform, llm=lambda istem: _json.dumps(
+            ortak.json_sor("Sen titiz bir Türkçe editörsün. Yalnız istenen JSON'u döndür.", istem, sicaklik=0.1), ensure_ascii=False))
+        if r["duzeltmeler"] or r["hatalar"]:
+            gunluk(f"açıklama denetimi: düzeltme={r['duzeltmeler'][:6]} uyarı={r['hatalar'][:3]}")
+        yeni = r["metin"] or metin
+    except Exception as e:  # noqa: BLE001
+        gunluk(f"açıklama denetimi çalışmadı: {type(e).__name__}")
+        yeni = metin
+    _DENETLENMIS[metin] = yeni
+    _DENETLENMIS[yeni] = yeni
+    return yeni
+
+
 def facebook_reels(hesap: str, video: Path, aciklama: str) -> str:
+    aciklama = aciklama_denetle(aciklama, "facebook")
     """Aynı videoyu hesabın Facebook sayfasına Reels olarak yayımlar (sayfa anahtarı = IG_<HESAP>_TOKEN; pages_manage_posts gerekir).
     Hata fırlatabilir; çağıran yakalar (Instagram paylaşımını etkilemez)."""
     k = hesap.upper()
@@ -157,6 +185,7 @@ def youtube_metni(hesap: str, metin: str, ig_kullanici: str) -> tuple[str, str]:
 
 
 def youtube_shorts(hesap: str, video: Path, metin: str, ig_kullanici: str) -> str:
+    metin = aciklama_denetle(metin, "youtube")
     """Aynı videoyu YouTube Shorts olarak yükler (YT_CLIENT_ID/SECRET/REFRESH_TOKEN; Mücahit Çakır kanalı).
     Hata fırlatabilir; çağıran yakalar (Instagram paylaşımını etkilemez)."""
     cid, sec, rt = env("YT_CLIENT_ID"), env("YT_CLIENT_SECRET"), env("YT_REFRESH_TOKEN")
