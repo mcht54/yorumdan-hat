@@ -57,3 +57,12 @@ Bir bölüm ~1,5–3 dk'da üretilir (Mac'te). Çıktı + açıklama metni `cikt
 - Anahtar yolu: İşletme Entegrasyonları'nda sayfa+IG işaretlendi → Graph Explorer kullanıcı anahtarı → Access Token Debugger "Extend" (bu kez şifre istemedi) →
   /me/accounts sayfa anahtarı. developers.facebook.com CSP'si localhost'a fetch'i engeller → anahtar panoya kopyalanıp `pbpaste` ile .env'e yazıldı, pano temizlendi.
 - Hat: hat/para.py + hat/butce.py + sablon/para; launchd com.mcht.yorumdan-para her gün 20:30. Kurallar icerik/para-kurallari.md.
+
+## Bulutta çalışma (2026-11-27) — Mac kapalıyken de
+- Kod: **açık** depo github.com/mcht54/yorumdan-hat (yerel `acik` dalı → `git push acik acik:main`). Sırlar GitHub gizli ayarlarında (14 adet), `.env` gitte YOK.
+- Kayıtlar: **özel** depo github.com/mcht54/yorumdan-durum = yerel `durum/` klasörü (iç içe git). `ortak.durum_esitle` her çalışmada pull → … → commit+push.
+  Actions bu depoya yazma deploy anahtarıyla (sır DURUM_DEPLOY_KEY) erişir.
+- Zamanlama `.github/workflows/gunluk.yml` (UTC): 09:15 Kartvizitçi, 09:30 Yılda Kaça Patlıyor?, 14:30 Maaş Kapışması, 17:30 Bütçe Kliniği. Elle deneme: Actions › gunluk › Run workflow (deneme=true).
+- Açık depo olduğu için Actions kayıtlarına günlük yazılmaz (YORUMDAN_SESSIZ=1); ayrıntı durum/gunluk.log'da.
+- Siteci Abi (web) Site Mucidi motoruna bağlı → Mac'te kalır (launchd 19:15), aynı durum deposunu kullanır. Panel senkronu (Mac, 10 dk) önce durum'u çeker.
+- Mac'teki kartvizit ve para launchd işleri bulut doğrulanınca KALDIRILDI (çift paylaşım olmasın).
