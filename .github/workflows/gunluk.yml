@@ -25,7 +25,7 @@ permissions:
 jobs:
   bolum:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 60   # Kartvizitçi 3B render ekran kartı olmadan ~25 dk
     env:
       YORUMDAN_SESSIZ: "1"          # açık depo: günlük satırları Actions kaydına yazılmaz, yalnız özel durum deposuna
       YORUMDAN_KAYNAK: "actions"
