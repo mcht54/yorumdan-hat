@@ -222,7 +222,8 @@ def durum_esitle(yon: str) -> None:
     if yon == "al":
         r = g("pull", "--rebase", "-q")
         if r.returncode:
-            print("durum pull olmadı: " + r.stderr[-200:], flush=True)
+            g("rebase", "--abort")
+            g("-c", "user.name=yorumdan-hat", "-c", "user.email=yorumdan-hat@users.noreply.github.com", "pull", "--no-rebase", "-X", "theirs", "--no-edit", "-q")
         return
     g("add", "-A")
     if g("diff", "--cached", "--quiet").returncode == 0:
@@ -232,5 +233,8 @@ def durum_esitle(yon: str) -> None:
     for _ in range(3):
         if g("push", "-q").returncode == 0:
             return
-        g("pull", "--rebase", "-q")
+        if g("pull", "--rebase", "-q").returncode:   # çakışma: rebase'i bırak, birleştir (çakışan JSON'da bizim sürüm kalır)
+            g("rebase", "--abort")
+            g("-c", "user.name=yorumdan-hat", "-c", "user.email=yorumdan-hat@users.noreply.github.com",
+              "pull", "--no-rebase", "-X", "ours", "--no-edit", "-q")
     print("durum push olmadı (3 deneme)", flush=True)
