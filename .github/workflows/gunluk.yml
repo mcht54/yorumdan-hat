@@ -84,7 +84,12 @@ jobs:
           mkdir -p .arac && cd .arac && [ -x node_modules/.bin/hyperframes ] || npm install -s --no-audit --no-fund hyperframes@0.9.80
           cd .. && printf '%s' "${{ secrets.PANEL_ANAHTARI }}" > hat/.panel_anahtari && chmod 600 hat/.panel_anahtari
       - name: Bölüm üret ve paylaş
-        run: python hat/gunluk.py ${{ steps.is.outputs.arg }} > /dev/null 2>&1 || true
+        run: python hat/gunluk.py ${{ steps.is.outputs.arg }} > /dev/null 2> durum/actions-son-hata.log || echo "hat hata kodu verdi (ayrıntı özel durum deposunda: actions-son-hata.log)"
+      - name: Durum kaydet (özel depo)
+        if: always()
+        run: |
+          cd durum && git add -A && git -c user.name=yorumdan-hat -c user.email=yorumdan-hat@users.noreply.github.com commit -qm "actions hata kaydı" || true
+          git pull --rebase -q || true; git push -q || true
       - name: Sonuç (yalnız durum, kişisel veri yok)
         if: always()
         run: |
