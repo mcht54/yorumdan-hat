@@ -184,7 +184,9 @@ def denetle(s: dict, p: dict, oku_: dict) -> list[str]:
 
 
 def kurallar() -> str:
-    return (ICERIK / "para-kurallari.md").read_text()
+    import gundem_notu  # doğrulanmış, tarihli gündem (2026-11-27): haftada 3 gün, süresi geçen düşer
+    g = gundem_notu.metin(ICERIK / "gundem" / "para.json")
+    return (ICERIK / "para-kurallari.md").read_text() + (("\n\n" + g) if g else "")
 
 
 def yaz_senaryo(k: dict, p: dict, gun: int) -> dict:

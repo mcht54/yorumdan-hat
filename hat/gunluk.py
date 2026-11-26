@@ -93,7 +93,9 @@ def radar_metni(tur: str) -> str:
                 gunluk(f"{tur}: radar yenilendi ({len(hs)} Instagram hesabı, {len(yt)} YouTube Shorts, arama {'var' if tt else 'yok'})")
         except Exception as e:  # noqa: BLE001
             gunluk(f"{tur}: radar yenilenemedi: {e}")
-    return radar.yazar_metni(o)
+    import gundem_notu  # doğrulanmış, tarihli gündem (2026-11-27): haftada 3 gün, süresi geçen düşer
+    g = gundem_notu.metin(ICERIK / "gundem" / f"{tur}.json")
+    return radar.yazar_metni(o) + (("\n\n" + g) if g else "")
 
 
 def bolum_para(deneme: bool, bicim: str = "butce") -> dict | None:

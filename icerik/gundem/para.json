@@ -1,0 +1,55 @@
+{
+ "guncelleme": "2026-11-27",
+ "not": "web aramasıyla doğrulandı; kaynak her maddede",
+ "maddeler": [
+  {
+   "bas": "2026-11-27",
+   "bit": "2026-12-31",
+   "bilgi": "2027 asgari ücreti Aralık'ta açıklanacak, gün belli değil; 2026 net asgari ücret 28.075 TL (geçen yıl 23 Aralık'ta açıklandı). Yüzde 25 artış senaryosunda 35.094 TL olur — bu bir TAHMİN senaryosudur.",
+   "fikir": "'Maaşın 7 bin lira artarsa nereye ayırırsın?' Zammı harcama/birikim/borç diye bölmek (örnek hesap).",
+   "kaynak": "https://www.cumhuriyet.com.tr/ekonomi/asgari-ucret-tespit-komisyonu-toplantilari-ne-zaman-2027-asgari-ucret-ne-kadar-olacak-2557014"
+  },
+  {
+   "bas": "2026-11-27",
+   "bit": "2027-01-05",
+   "bilgi": "Memur ve memur emeklisi Ocak 2027 zammı: toplu sözleşme yüzde 5 + enflasyon farkı; toplamın yaklaşık yüzde 7,91 olması TAHMİN ediliyor (kesinleşmedi).",
+   "fikir": "'Maaşın artınca farkın kaç lirası gerçekten cebinde kalır?'",
+   "kaynak": "https://www.takvim.com.tr/ekonomi/2026/11/03/yeni-enflasyonla-memur-ve-emekliye-ocak-zammi-hesabi"
+  },
+  {
+   "bas": "2026-11-27",
+   "bit": "2026-12-03",
+   "bilgi": "Kasım enflasyonu 3 Aralık 2026 Perşembe açıklanacak (TÜİK her ayın 3'ünde açıklıyor).",
+   "fikir": "'Geçen yıl 100 TL'ye aldığın sepet bugün kaç lira?' (rakamı açıklanınca kullan, öncesinde tahmin verme)",
+   "kaynak": "https://www.antalyahaber.net/kasim-2026-enflasyonu-ne-zaman-aciklanacak"
+  },
+  {
+   "bas": "2026-11-27",
+   "bit": "2026-11-30",
+   "bilgi": "Kasım 2026 kira artış üst sınırı yüzde 31,23: 20.000 TL kira yenilemede en fazla 26.246 TL olabilir.",
+   "fikir": "Kira artışını bütçeye önceden yerleştirmek.",
+   "kaynak": "https://www.milligazete.com.tr/kasim-kira-artis-orani-2026-tufe-12-aylik-ortalama-ve-zam-hesaplamasi"
+  },
+  {
+   "bas": "2026-12-01",
+   "bit": "2026-12-31",
+   "bilgi": "TCMB: 1 Aralık 2026'dan itibaren kredi kartı aylık akdi faizi 30.000 TL altı borçta yüzde 3,08 (önce 3,25), gecikme faizi yüzde 3,38.",
+   "fikir": "'Asgari ödemeyi yatırıp 20.000 TL borcu devredersen ayda yaklaşık 616 TL faiz ödersin.'",
+   "kaynak": "https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Istatistikler/Bankacilik+Verileri/Kredi_Karti_Islemlerinde_Uygulanacak_Azami_Faiz_Oranlari"
+  },
+  {
+   "bas": "2026-11-27",
+   "bit": "2027-01-31",
+   "bilgi": "MTV 2027'de yeniden değerleme oranı yüzde 27,83 kadar artabilir (oran değiştirilebilir, TAHMİNİ); ilk taksit Ocak'ta.",
+   "fikir": "'Bu yıl 10.000 TL MTV ödediysen 2027 için yaklaşık 12.783 TL'ye hazırlan (tahmini); bugünden ayda 1.065 TL kenara koy.'",
+   "kaynak": "https://www.ntv.com.tr/ntvpara/galeri-2027de-hangi-arac-sahibi-ne-kadar-mtv-odeyecek-1752269"
+  },
+  {
+   "bas": "2026-11-27",
+   "bit": "2026-12-02",
+   "bilgi": "Efsane Cuma 27 Kasım, Siber Pazartesi 30 Kasım. İnternetten alışverişte 14 gün cayma hakkı var.",
+   "fikir": "'Yüzde 50 indirim mi? Önce indirimden önceki fiyata bak.' Plansız indirim harcamasını bütçeye sokmamak.",
+   "kaynak": "https://www.eleman.net/is-rehberi/ne-zaman/black-friday-ne-zaman-h24967"
+  }
+ ]
+}
