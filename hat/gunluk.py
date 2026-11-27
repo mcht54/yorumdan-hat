@@ -15,6 +15,7 @@ import traceback
 
 import kartvizit
 import panel
+import platform_ayar
 import radar
 from guvenlik import uygunsuz
 import sec
@@ -109,9 +110,11 @@ def bolum_para(deneme: bool, bicim: str = "butce") -> dict | None:
     canli = ay["mod"] == "canli" and not deneme
     kd = f"{'deneme-' if not canli else ''}{ {'butce': 'para-bolumler.json', 'aliskanlik': aliskanlik.KAYIT, 'kapisma': karsilastirma.KAYIT}[bicim] }"
     kayit = oku(kd, [])
-    if canli and any(k.get("medya_id") and k.get("tarih", "").startswith(dt.datetime.now().strftime("%Y%m%d")) for k in kayit):
+    if canli and any(platform_ayar.paylasildi(k) and k.get("tarih", "").startswith(dt.datetime.now().strftime("%Y%m%d")) for k in kayit):
         gunluk("para: bugün zaten paylaşıldı, atlandı"); return None
-    gun = len([k for k in kayit if k.get("medya_id") or deneme or not canli]) + 1
+    if canli and len(platform_ayar.kapalilar(tur)) == len(platform_ayar.PLATFORMLAR):
+        gunluk("para: panelde tüm platformlar kapalı, bugün bölüm üretilmedi"); return None
+    gun = len([k for k in kayit if platform_ayar.paylasildi(k) or deneme or not canli]) + 1
     ig = Instagram(tur)
     ylar = []
     if not deneme and ig.hazir:   # bu biçimin son videosunun yorumları (yoksa hesabın son Reels'i)
@@ -160,27 +163,36 @@ def bolum_para(deneme: bool, bicim: str = "butce") -> dict | None:
              "yorum_id": k.get("yorum_id"), "senaryo_kaynak": s.get("_kaynak"), "video": str(cikti), "medya_id": None}
     if canli:
         ig = Instagram(tur)
-        b = ig.reels(cikti, metin, ortaklar=list(h.get("ortak", [])))
-        satir.update({"medya_id": b["id"], "link": b.get("permalink")})
-        if ay.get("facebook_reels", True) and env("META_PARA_PAGE_ID"):
+        kapali = platform_ayar.kapalilar(tur)
+        if kapali:
+            satir["panelde_kapali"] = kapali
+            gunluk(f"para: {', '.join(kapali)} → {platform_ayar.NOT}")
+        b = None
+        if "instagram" not in kapali:
+            b = ig.reels(cikti, metin, ortaklar=list(h.get("ortak", [])))
+            satir.update({"medya_id": b["id"], "link": b.get("permalink")})
+        else:
+            satir["yayin_denendi"] = True   # Instagram kapalı: Facebook/YouTube denemesi de "bugün zaten paylaşıldı" kapısını kapatır
+        if ay.get("facebook_reels", True) and env("META_PARA_PAGE_ID") and "facebook" not in kapali:
             try:
                 from instagram import facebook_reels
                 satir["fb_link"] = facebook_reels(tur, cikti, metin)
             except Exception as ex:  # noqa: BLE001
                 gunluk(f"para: Facebook Reels paylaşılamadı: {ex}"); satir["fb_hata"] = str(ex)[:200]
-        if ay.get("youtube", True):
+        if ay.get("youtube", True) and "youtube" not in kapali:
             try:
                 from instagram import youtube_shorts
                 satir["yt_link"] = youtube_shorts(tur, cikti, metin, h.get("ig_kullanici", ""))
             except Exception as ex:  # noqa: BLE001
                 gunluk(f"para: YouTube Shorts paylaşılamadı: {ex}"); satir["yt_hata"] = str(ex)[:200]
         try:
-            ig.yorum_yaz(b["id"], {"butce": h.get("ilk_yorum") or para.KAPANIS,
-                                   "aliskanlik": "Yarının alışkanlığı bu videonun yorumlarından seçilecek: bir alışkanlığını ve fiyatını yaz. En çok beğeni alan kazanır.",
-                                   "kapisma": "Yarının kapışması bu videonun yorumlarından: maaşını, kiranı ve şehrini yaz. En çok beğeni alan iki yorum kapışır."}[bicim])
-            if k.get("yorum_id") and k["kaynak"] == "yorum":
-                ig.yanitla(k["yorum_id"], (f"Bütçen hazır: {b.get('permalink') or ''} Kaydet, maaş günü zarfları ayır." if bicim == "butce"
-                                           else f"Hesabın hazır: {b.get('permalink') or ''} Yarıya indir, cebinde kalsın."))
+            if b is not None:   # Instagram panelde kapalıysa ilk yorum/yanıt yok (hata değil)
+                ig.yorum_yaz(b["id"], {"butce": h.get("ilk_yorum") or para.KAPANIS,
+                                       "aliskanlik": "Yarının alışkanlığı bu videonun yorumlarından seçilecek: bir alışkanlığını ve fiyatını yaz. En çok beğeni alan kazanır.",
+                                       "kapisma": "Yarının kapışması bu videonun yorumlarından: maaşını, kiranı ve şehrini yaz. En çok beğeni alan iki yorum kapışır."}[bicim])
+                if k.get("yorum_id") and k["kaynak"] == "yorum":
+                    ig.yanitla(k["yorum_id"], (f"Bütçen hazır: {b.get('permalink') or ''} Kaydet, maaş günü zarfları ayır." if bicim == "butce"
+                                               else f"Hesabın hazır: {b.get('permalink') or ''} Yarıya indir, cebinde kalsın."))
         except Exception as ex:  # noqa: BLE001
             gunluk(f"para: yorum/yanıt yazılamadı: {ex}")
         u = oku("para-kullanilan.json", [])
@@ -204,9 +216,11 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
     canli = ay["mod"] == "canli" and not deneme
     kd = f"{'deneme-' if not canli else ''}{tur}-bolumler.json"   # deneme kayıtları gerçek sırayı kirletmez
     kayit = oku(kd, [])
-    if canli and any(k.get("medya_id") and k.get("tarih", "").startswith(dt.datetime.now().strftime("%Y%m%d")) for k in kayit):
+    if canli and any(platform_ayar.paylasildi(k) and k.get("tarih", "").startswith(dt.datetime.now().strftime("%Y%m%d")) for k in kayit):
         gunluk(f"{tur}: bugün zaten paylaşıldı, atlandı"); return None
-    gun = len([k for k in kayit if k.get("medya_id") or deneme or not canli]) + 1
+    if canli and len(platform_ayar.kapalilar(tur)) == len(platform_ayar.PLATFORMLAR):
+        gunluk(f"{tur}: panelde tüm platformlar kapalı, bugün bölüm üretilmedi"); return None
+    gun = len([k for k in kayit if platform_ayar.paylasildi(k) or deneme or not canli]) + 1
     medya, ylar = yorumlar.topla(tur, deneme=deneme or not Instagram(tur).hazir)
     firma, fikir_id = None, None
     fk = None if deneme else panel.siradaki_fikir(tur)   # panelin "İçerik fikri" kutusu önceliklidir
@@ -256,19 +270,27 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
                    "duzen": r.get("duzen"), "arka_mod": r.get("arka_mod"), "rozet": r.get("rozet"), "motif": r.get("motif"), "varyant": r.get("varyant"), "senaryo_kaynak": s.get("_kaynak"), "kaynak": firma["kaynak"], "kullanici": firma.get("kullanici"), "medya_id": None}
     if canli:
         ig = Instagram(tur)
+        kapali = platform_ayar.kapalilar(tur)
+        if kapali:
+            kayit_satir["panelde_kapali"] = kapali
+            gunluk(f"{tur}: {', '.join(kapali)} → {platform_ayar.NOT}")
         ortaklar = list(h.get("ortak", []))
         if firma.get("kaynak") == "yorum" and firma.get("kendisi") and firma.get("kullanici"):
             ortaklar = [firma["kullanici"]] + ortaklar
-        b = ig.reels(cikti, metin, ortaklar=ortaklar)
-        kayit_satir.update({"medya_id": b["id"], "link": b.get("permalink")})
-        if ay.get("facebook_reels", True):   # aynı video hesabın Facebook sayfasına da (hata IG paylaşımını bozmaz)
+        b = None
+        if "instagram" not in kapali:
+            b = ig.reels(cikti, metin, ortaklar=ortaklar)
+            kayit_satir.update({"medya_id": b["id"], "link": b.get("permalink")})
+        else:
+            kayit_satir["yayin_denendi"] = True   # Instagram kapalı: Facebook/YouTube denemesi de "bugün zaten paylaşıldı" kapısını kapatır
+        if ay.get("facebook_reels", True) and "facebook" not in kapali:   # aynı video hesabın Facebook sayfasına da (hata IG paylaşımını bozmaz)
             try:
                 from instagram import facebook_reels
                 kayit_satir["fb_link"] = facebook_reels(tur, cikti, metin)
             except Exception as e:  # noqa: BLE001
                 gunluk(f"{tur}: Facebook Reels paylaşılamadı: {e}")
                 kayit_satir["fb_hata"] = str(e)[:200]  # panel tablosu nedeni gösterir, "Düzelt" yeniden dener
-        if ay.get("youtube", True):   # Mücahit Çakır YouTube kanalına Shorts (hata IG paylaşımını bozmaz)
+        if ay.get("youtube", True) and "youtube" not in kapali:   # Mücahit Çakır YouTube kanalına Shorts (hata IG paylaşımını bozmaz)
             try:
                 from instagram import youtube_shorts
                 kayit_satir["yt_link"] = youtube_shorts(tur, cikti, metin, h.get("ig_kullanici", ""))
@@ -276,9 +298,10 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
                 gunluk(f"{tur}: YouTube Shorts paylaşılamadı: {e}")
                 kayit_satir["yt_hata"] = str(e)[:200]
         try:
-            ig.yorum_yaz(b["id"], ay["ilk_yorum"])
-            if firma.get("yorum_id"):
-                ig.yanitla(firma["yorum_id"], ay["tebrik"].format(link=b.get("permalink") or ""))
+            if b is not None:   # Instagram panelde kapalıysa ilk yorum/yanıt yok (hata değil)
+                ig.yorum_yaz(b["id"], ay["ilk_yorum"])
+                if firma.get("yorum_id"):
+                    ig.yanitla(firma["yorum_id"], ay["tebrik"].format(link=b.get("permalink") or ""))
         except Exception as e:  # noqa: BLE001
             gunluk(f"{tur}: yorum/yanıt yazılamadı: {e}")
     else:

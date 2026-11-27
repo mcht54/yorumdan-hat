@@ -22,6 +22,7 @@ import time
 import urllib.error
 import urllib.request
 
+import platform_ayar
 from ortak import DURUM, KOK, ayarlar, env, gunluk, oku, yaz
 
 TR = dt.timezone(dt.timedelta(hours=3))
@@ -154,11 +155,13 @@ def _bolum(tur: str, k: dict, ig: str) -> dict:
         k = {**k, "firma": f"{int(k.get('maas') or 0):,}".replace(",", ".") + " ₺ maaş bütçesi", "sektor": DURUM_AD.get(k.get("durum"), "Bütçe")}
     gun, saat_ = _gun_saat(str(k.get("tarih") or "00000000-0000"))
     link = k.get("link") if str(k.get("link") or "").startswith("https://") else None
-    yayinda = bool(k.get("medya_id"))
+    yayinda = platform_ayar.yayinda(k)
+    ig_kapali = "instagram" in (k.get("panelde_kapali") or [])
     return {
         "id": f"{k.get('_on') or tur}-{k.get('tarih')}", "gun": gun, "saat": saat_, "baslik": k.get("firma") or "?", "bolum_no": k.get("gun"),
         "sektor": str(k.get("sektor") or "")[:40], "konu": f"@{ig}", "durum": "yayinlandi" if yayinda else "uretildi",
-        "platformlar": [{"anahtar": "instagram", "ad": "Instagram Reels", "durum": "paylasildi" if yayinda else "bekliyor", "link": link},
+        "platformlar": [*([] if ig_kapali else [{"anahtar": "instagram", "ad": "Instagram Reels",
+                                                  "durum": "paylasildi" if k.get("medya_id") else "bekliyor", "link": link}]),
                         *_ek_platformlar(k)],
         "satirlar": [], "duzenlenebilir": False, "kilit_nedeni": "Bu hat panelden düzenlenmez.",
         "yorumdan": {"hesap": tur, "ig_kullanici": ig, "firma": k.get("firma"), "sektor": k.get("sektor"), "gun_no": k.get("gun"),
@@ -172,9 +175,12 @@ def _plan(tur: str, ig: str, gun: dt.date, saat_: str, durum: str, hata: str | N
     return {
         "id": f"{tur}-{gun:%Y%m%d}-plan", "gun": gun.isoformat(), "saat": saat_, "baslik": "Yorumlardan seçilecek maaş" if tur == "para" else "Yorumlardan seçilecek firma", "bolum_no": None,
         "sektor": "", "konu": f"@{ig}", "durum": durum,
-        "platformlar": [{"anahtar": "instagram", "ad": "Instagram Reels", "durum": "hata" if durum == "hata" else "bekliyor", "link": None},
-                        *([{"anahtar": "facebook", "ad": "Facebook Reels", "durum": "bekliyor", "link": None}] if ayarlar().get("facebook_reels", True) else []),
-                        *([{"anahtar": "youtube", "ad": "YouTube Shorts", "durum": "bekliyor", "link": None}] if ayarlar().get("youtube", True) else [])],
+        "platformlar": [*([{"anahtar": "instagram", "ad": "Instagram Reels", "durum": "hata" if durum == "hata" else "bekliyor", "link": None}]
+                          if platform_ayar.acik(tur, "instagram") else []),   # panelde kapalı platform planda gösterilmez
+                        *([{"anahtar": "facebook", "ad": "Facebook Reels", "durum": "bekliyor", "link": None}]
+                          if ayarlar().get("facebook_reels", True) and platform_ayar.acik(tur, "facebook") else []),
+                        *([{"anahtar": "youtube", "ad": "YouTube Shorts", "durum": "bekliyor", "link": None}]
+                          if ayarlar().get("youtube", True) and platform_ayar.acik(tur, "youtube") else [])],
         "satirlar": [], "duzenlenebilir": False, "kilit_nedeni": "Bu hat panelden düzenlenmez.",
         "yorumdan": {"hesap": tur, "ig_kullanici": ig, "firma": "", "sektor": "", "hata": hata},
     }
@@ -196,7 +202,9 @@ def ozet(simdi: dt.datetime | None = None) -> dict:
         bolumler += [_bolum(tur, k, ig) for k in kayit[-EN_COK:]]
         if not (h.get("aktif") and canli and not durak):
             continue
-        bugun_var = any(str(k["tarih"]).startswith(f"{simdi:%Y%m%d}") and k.get("medya_id") for k in kayit)
+        if len(platform_ayar.kapalilar(tur)) == len(platform_ayar.PLATFORMLAR):
+            continue  # panelde tüm platformları kapalı: bilerek üretilmiyor, "bölüm çıkmadı" uyarısı/planı yok
+        bugun_var = any(str(k["tarih"]).startswith(f"{simdi:%Y%m%d}") and platform_ayar.paylasildi(k) for k in kayit)
         hh, mm = map(int, s.split(":"))
         calisma = simdi.replace(hour=hh, minute=mm, second=0, microsecond=0)
         hata = _son_hata(log, tur)
@@ -218,7 +226,7 @@ def ozet(simdi: dt.datetime | None = None) -> dict:
                 ka = [k for k in (oku(dosya, []) or []) if isinstance(k, dict) and k.get("tarih")]
                 bolumler += [_bolum(tur, {**k, "bicim": bic}, ig) for k in ka[-EN_COK:]]
                 ah, am = map(int, a_saat.split(":"))
-                a_var = any(str(k["tarih"]).startswith(f"{simdi:%Y%m%d}") and k.get("medya_id") for k in ka)
+                a_var = any(str(k["tarih"]).startswith(f"{simdi:%Y%m%d}") and platform_ayar.paylasildi(k) for k in ka)
                 for gun_ in (simdi.date(), simdi.date() + dt.timedelta(days=1)):
                     if gun_ == simdi.date() and (a_var or simdi > simdi.replace(hour=ah, minute=am) + dt.timedelta(minutes=GECIKME_DK)):
                         continue
@@ -249,7 +257,10 @@ def _istek(yol: str, govde: dict) -> dict:
         "Content-Type": "application/json", "X-Requested-With": "ajans-web", "User-Agent": "yorumdan-hat/1",
         "X-Muhit-Zaman": zaman, "X-Muhit-Imza": imza})
     with urllib.request.urlopen(req, timeout=30) as r:
-        return json.loads(r.read() or b"{}")
+        cevap = json.loads(r.read() or b"{}")
+    if yol == "":
+        platform_ayar.kaydet(cevap)  # hesap başına platform aç/kapa → durum/platform_ayarlari.json (son bilinen ayar)
+    return cevap
 
 
 def _komutlar(cevap: dict) -> tuple[list[str], list[dict]]:
@@ -320,7 +331,7 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
             adimlar.append({"ad": "YouTube bağlantısı", "durum": "hata", "mesaj": _hata_sinifi(str(e))})
     kd = f"{tur}-bolumler.json"
     kayit = oku(kd, []) or []
-    bugun = [k for k in kayit if str(k.get("tarih", "")).startswith(f"{simdi:%Y%m%d}") and k.get("medya_id")]
+    bugun = [k for k in kayit if str(k.get("tarih", "")).startswith(f"{simdi:%Y%m%d}") and platform_ayar.paylasildi(k)]
     if bugun:
         k = bugun[-1]
         video = pathlib.Path(str(k.get("video") or ""))
@@ -329,8 +340,8 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
         for anahtar, ad, lk, hk, acik, fn in (
                 ("facebook", "Facebook Reels", "fb_link", "fb_hata", ay.get("facebook_reels", True), lambda: facebook_reels(tur, video, metin)),
                 ("youtube", "YouTube Shorts", "yt_link", "yt_hata", ay.get("youtube", True), lambda: youtube_shorts(tur, video, metin, h.get("ig_kullanici", "")))):
-            if not acik or k.get(lk) or not k.get(hk):
-                continue
+            if not acik or not platform_ayar.acik(tur, anahtar) or k.get(lk) or not k.get(hk):
+                continue  # panelde kapatılan platform Düzelt'te de yeniden denenmez
             if not video.exists() or not metin:
                 adimlar.append({"ad": f"{ad} yeniden gönderme", "durum": "hata", "mesaj": "Video ya da açıklama dosyası bulunamadı"})
                 continue
