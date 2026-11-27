@@ -76,5 +76,23 @@ def miks(ham_video: pathlib.Path, ses: pathlib.Path, sfx: list[tuple[str, float,
                                                                "-c:v", "copy", "-c:a", "aac", "-ar", "48000", "-b:a", "192k", "-shortest", str(cikti)])
     if r.returncode:
         raise RuntimeError("miks: " + r.stderr[-800:])
+    tepe_duzelt(cikti)
     gunluk(f"miks tamam ({muzik.name}) → {cikti.name}")
     return cikti
+
+
+def tepe_duzelt(video: pathlib.Path, hedef: float = -1.5) -> None:
+    """AAC kodlaması sonrası gerçek tepe -1 dBFS'i aşarsa sesi o kadar kıs (GitHub'daki ffmpeg 6.1'de limiter sonrası +1,2 dBFS görüldü)."""
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(video), "-af", "ebur128=peak=true", "-f", "null", "-"], capture_output=True, text=True).stderr
+    try:
+        tp = float(r.split("Peak:")[-1].split("dBFS")[0])
+    except Exception:  # noqa: BLE001
+        return
+    if tp <= -1.0:
+        return
+    gecici = video.with_suffix(".tepe.mp4")
+    k = subprocess.run(["ffmpeg", "-hide_banner", "-y", "-i", str(video), "-map", "0", "-c:v", "copy", "-af", f"volume={hedef - tp:.2f}dB",
+                        "-c:a", "aac", "-ar", "48000", "-b:a", "192k", str(gecici)], capture_output=True, text=True)
+    if k.returncode == 0:
+        gecici.replace(video)
+        gunluk(f"ses tepesi {tp:.1f} dBFS → {hedef - tp:.1f} dB kısıldı")
