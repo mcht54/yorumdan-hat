@@ -16,6 +16,17 @@ from uret import e, hazirla, miks, render
 
 DUZENLER = ["yatay", "merkez", "panel", "dev", "minimal", "kose", "serit", "bant", "muhur"]  # 2026-11-27: +serit, bant, mühür
 ARKA_MODLAR = ["acik", "ana", "vurgu"]
+ROZETLER = ["daire", "kare", "altigen", "elmas", "kalkan", "yaprak", "halka"]   # 2026-11-27: logo biçimi her bölümde değişsin
+MOTIFLER = ["noktalar", "cizgi", "dalga", "halkalar", "ucgen", "izgara", "filigran"]   # ön yüz zemin deseni
+
+
+def stil_sec(dosya: str = "kartvizit-bolumler.json") -> tuple[str, str]:
+    """Logo rozeti ve zemin deseni son 3 bölümde kullanılanı tekrar etmez (renk dışında da tasarım değişsin)."""
+    kayit = oku(dosya, [])
+    son_r = [b.get("rozet") for b in kayit[-3:]]
+    son_m = [b.get("motif") for b in kayit[-3:]]
+    return (random.choice([x for x in ROZETLER if x not in son_r] or ROZETLER),
+            random.choice([x for x in MOTIFLER if x not in son_m] or MOTIFLER))
 
 
 def duzen_sec(dosya: str = "kartvizit-bolumler.json") -> tuple[str, str]:
@@ -68,6 +79,7 @@ def kelime_html(t0: float, d: float, p: str) -> str:
 def yap(firma: dict, s: dict, gun: int, yildiz: dict, is_dir: pathlib.Path, cikti: pathlib.Path, duzen: tuple[str, str] | None = None) -> dict:
     is_dir.mkdir(parents=True, exist_ok=True)
     duzen_kod, arka_mod = duzen or duzen_sec()
+    rozet_kod, motif_kod = stil_sec()
     cum = anlatim("kartvizit", s)
     metin = " ".join(c for _, c in cum)
     wav = is_dir / "ses.wav"
@@ -140,7 +152,7 @@ def yap(firma: dict, s: dict, gun: int, yildiz: dict, is_dir: pathlib.Path, cikt
              ["#yorum-kutu", "dus", C + 4.3], ["#okb", "zipzip", C + 4.7], ["#cta-not", "solgun", C + 6.75]] + kalpler + [[f"#y{i:02d} span", "pop", t0] for i, (t0, _, _) in enumerate(alt)]
     flaslar = [[0.55, 0.45], [Z["T"], 0.3], [Z["F0"], 0.3], [Z["R2"], 0.3], [Z["P0"], 0.35], [Z["A0"], 0.25], [Z["M0"], 0.7], [C, 0.3]]
     V = {"Z": Z, "firma": firma["firma"], "sektor": firma["sektor"], "slogan": s.get("slogan") or "", "monogram": monogram(firma["firma"]),
-         "font_stil": s.get("font_stil", "modern"), "perdah": yildiz["kod"], "duzen": duzen_kod, "arka_mod": arka_mod, "renk": renk, "yanlis_renk": s["yanlis_renk"],
+         "font_stil": s.get("font_stil", "modern"), "perdah": yildiz["kod"], "duzen": duzen_kod, "arka_mod": arka_mod, "rozet": rozet_kod, "motif": motif_kod, "renk": renk, "yanlis_renk": s["yanlis_renk"],
          "arka_satirlar": satirlar, "qr": qr, "flaslar": flaslar, "giris": giris}
     L = [x.replace('class="clip damga"', 'class="clip damga" data-layout-allow-occlusion') for x in L]   # flaş anında kasıtlı örtüşme
     proje = hazirla("kartvizit", is_dir, {"SURE": f"{SON:.2f}", "KATMANLAR": "\n".join(L), "VERI": json.dumps(V, ensure_ascii=False)})
@@ -149,5 +161,5 @@ def yap(firma: dict, s: dict, gun: int, yildiz: dict, is_dir: pathlib.Path, cikt
     sfx = [("vurus", 0.55, .55), ("vuus", Z["T"] - 0.05, .5), ("vuus", Z["F0"] - 0.05, .5), ("vurus", Z["F1"], .55), ("vurus", Z["R1"], .55),
            ("vuus", Z["R2"] - 0.05, .5), ("vurus", Z["P0"], .6), ("vuus", Z["A0"], .5), ("vurus", Z["M0"], .6), ("vuus", C - 0.05, .5)]
     miks(ham, wav, sfx, SON, cikti, proje / "assets")
-    gunluk(f"kartvizit bölümü hazır: {cikti} ({SON:.1f} sn, benzerlik {benz:.2f}, düzen {duzen_kod}/{arka_mod})")
-    return {"duzen": duzen_kod, "arka_mod": arka_mod, "sure": SON, "benzerlik": benz, "Z": Z, "proje": str(proje)}
+    gunluk(f"kartvizit bölümü hazır: {cikti} ({SON:.1f} sn, benzerlik {benz:.2f}, düzen {duzen_kod}/{arka_mod}, rozet {rozet_kod}, desen {motif_kod})")
+    return {"duzen": duzen_kod, "arka_mod": arka_mod, "rozet": rozet_kod, "motif": motif_kod, "sure": SON, "benzerlik": benz, "Z": Z, "proje": str(proje)}

@@ -253,7 +253,7 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
         return None
     (cikti.with_suffix(".txt")).write_text(metin)
     kayit_satir = {"gun": gun, "tarih": tarih, "firma": firma["firma"], "sektor": firma["sektor"], "yildiz": yil["kod"], "video": str(cikti),
-                   "duzen": r.get("duzen"), "arka_mod": r.get("arka_mod"), "varyant": r.get("varyant"), "senaryo_kaynak": s.get("_kaynak"), "kaynak": firma["kaynak"], "kullanici": firma.get("kullanici"), "medya_id": None}
+                   "duzen": r.get("duzen"), "arka_mod": r.get("arka_mod"), "rozet": r.get("rozet"), "motif": r.get("motif"), "varyant": r.get("varyant"), "senaryo_kaynak": s.get("_kaynak"), "kaynak": firma["kaynak"], "kullanici": firma.get("kullanici"), "medya_id": None}
     if canli:
         ig = Instagram(tur)
         ortaklar = list(h.get("ortak", []))

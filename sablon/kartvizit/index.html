@@ -155,6 +155,48 @@
           muhur:   { x0: 180, ky: 560, sec: [170, 200, 1450, 700], sl: [884, 668, "left"] }
         };
         var DL = DUZEN[DZ] || DUZEN.yatay; if (!DUZEN[DZ]) DZ = "yatay";
+        // ---------- logo rozeti (V.rozet) + zemin deseni (V.motif): 2026-11-27 "hep aynı tasarım, sadece renk değişiyor" ----------
+        var ROZ = V.rozet || "daire", MOT = V.motif || "yok";
+        function rozetYol(x, cx, cy, r) {
+          x.beginPath();
+          if (ROZ === "kare") { yuvarlak(x, cx - r, cy - r, 2 * r, 2 * r, r * 0.24); return; }
+          if (ROZ === "altigen") { for (var k = 0; k < 6; k++) { var a = Math.PI / 6 + k * Math.PI / 3; x[k ? "lineTo" : "moveTo"](cx + r * 1.08 * Math.cos(a), cy + r * 1.08 * Math.sin(a)); } x.closePath(); return; }
+          if (ROZ === "elmas") { var q = r * 1.18; x.moveTo(cx, cy - q); x.lineTo(cx + q, cy); x.lineTo(cx, cy + q); x.lineTo(cx - q, cy); x.closePath(); return; }
+          if (ROZ === "kalkan") { x.moveTo(cx - r, cy - r * 0.95); x.lineTo(cx + r, cy - r * 0.95); x.lineTo(cx + r, cy + r * 0.1); x.quadraticCurveTo(cx + r, cy + r * 0.8, cx, cy + r * 1.12); x.quadraticCurveTo(cx - r, cy + r * 0.8, cx - r, cy + r * 0.1); x.closePath(); return; }
+          if (ROZ === "yaprak") { x.moveTo(cx - r, cy + r); x.lineTo(cx - r, cy); x.arcTo(cx - r, cy - r, cx, cy - r, r); x.lineTo(cx + r, cy - r); x.lineTo(cx + r, cy); x.arcTo(cx + r, cy + r, cx, cy + r, r); x.closePath(); return; }
+          x.arc(cx, cy, r, 0, Math.PI * 2);
+        }
+        // rozet + monogram; halka: içi boş çerçeve, harf rozet renginde
+        function rozet(x, cx, cy, r, dolgu, harf, px, dy) {
+          rozetYol(x, cx, cy, ROZ === "halka" ? r * 0.94 : r);
+          if (ROZ === "halka") { x.strokeStyle = dolgu; x.lineWidth = Math.max(8, r * 0.1); x.stroke(); harf = dolgu; } else { x.fillStyle = dolgu; x.fill(); }
+          x.fillStyle = harf; x.font = fnt(ROZ === "elmas" ? Math.round(px * 0.86) : px); x.textAlign = "center"; x.textBaseline = "middle";
+          x.fillText(V.monogram, cx, cy + (dy || 0) + (ROZ === "kalkan" ? r * 0.06 : 0));
+          x.textBaseline = "alphabetic";
+        }
+        function motifCiz(x) {
+          if (MOT === "yok" || P === "kraft") return;
+          var mr = Math.abs(parlak(VUR) - parlak(ANA)) > 0.15 ? VUR : zit(ANA), i, j;
+          x.save(); x.fillStyle = mr; x.strokeStyle = mr;
+          if (MOT === "noktalar") {        // sağ üstte solan nokta ızgarası
+            for (i = 0; i < 9; i++) for (j = 0; j < 7; j++) { x.globalAlpha = 0.34 * (1 - (i + j) / 16); x.beginPath(); x.arc(TW - 90 - i * 52, 90 + j * 52, 7, 0, Math.PI * 2); x.fill(); }
+          } else if (MOT === "cizgi") {    // ince çapraz çizgiler, tüm yüz
+            x.globalAlpha = 0.07; x.lineWidth = 12; for (i = -TH; i < TW; i += 64) { x.beginPath(); x.moveTo(i, TH); x.lineTo(i + TH, 0); x.stroke(); }
+          } else if (MOT === "dalga") {    // altta akan dalga çizgileri
+            x.lineWidth = 4; for (j = 0; j < 7; j++) { x.globalAlpha = 0.1 + j * 0.035; x.beginPath(); for (i = 0; i <= TW; i += 20) { var y = TH - 60 - j * 34 + Math.sin(i / 170 + j * 0.6) * 26; i ? x.lineTo(i, y) : x.moveTo(i, y); } x.stroke(); }
+          } else if (MOT === "halkalar") { // sağ üst köşeden eş merkezli halkalar
+            x.lineWidth = 5; for (i = 1; i <= 12; i++) { x.globalAlpha = 0.16 * (1 - i / 14); x.beginPath(); x.arc(TW + 40, -40, i * 78, 0, Math.PI * 2); x.stroke(); }
+          } else if (MOT === "ucgen") {    // sağ altta düşük poligon üçgenler
+            var t0 = tohum; tohum = 97; for (i = 0; i < 6; i++) for (j = 0; j < 4; j++) { var bx = TW - 120 * (i + 1), by = TH - 120 * (j + 1); if (i + j > 5) continue;
+              x.globalAlpha = 0.05 + rnd() * 0.14; x.beginPath(); if ((i + j) % 2) { x.moveTo(bx, by); x.lineTo(bx + 120, by); x.lineTo(bx, by + 120); } else { x.moveTo(bx + 120, by); x.lineTo(bx + 120, by + 120); x.lineTo(bx, by + 120); } x.closePath(); x.fill();
+              x.globalAlpha = 0.04 + rnd() * 0.1; x.beginPath(); if ((i + j) % 2) { x.moveTo(bx + 120, by); x.lineTo(bx + 120, by + 120); x.lineTo(bx, by + 120); } else { x.moveTo(bx, by); x.lineTo(bx + 120, by); x.lineTo(bx, by + 120); } x.closePath(); x.fill(); } tohum = t0;
+          } else if (MOT === "izgara") {   // ince teknik ızgara
+            x.globalAlpha = 0.08; x.lineWidth = 2; for (i = 60; i < TW; i += 60) x.fillRect(i, 0, 2, TH); for (j = 60; j < TH; j += 60) x.fillRect(0, j, TW, 2);
+          } else if (MOT === "filigran") { // dev monogram ana hattı, sağ altta taşar
+            x.globalAlpha = 0.1; x.lineWidth = 6; x.font = fnt(900); x.textAlign = "right"; x.textBaseline = "alphabetic"; x.strokeText(V.monogram, TW + 60, TH + 160);
+          }
+          x.restore();
+        }
         var LOGO = { mx: 330, my: 470, mr: 175, nx: 560, ny: 500, sy: 610 };
         function logoCiz(x, p, renkYazi, renkVurgu, maske, olcek, susVar) {
           if (p <= 0) return;
@@ -162,9 +204,8 @@
           var mono = maske ? "#fff" : renkVurgu, monoYazi = maske ? "#000" : (renkYazi === renkVurgu ? "#fff" : renkYazi), ad = maske ? "#fff" : renkYazi;
           x.textBaseline = "alphabetic";
           if (DZ === "merkez") {
-            x.fillStyle = mono; x.beginPath(); x.arc(850, 300, 135, 0, Math.PI * 2); x.fill();
-            x.fillStyle = monoYazi; x.font = fnt(116); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 850, 306);
-            x.textBaseline = "alphabetic"; x.fillStyle = ad; sigdir(x, V.firma, 130, 1380); x.textAlign = "center"; x.fillText(V.firma, 850, 620);
+            rozet(x, 850, 300, 135, mono, monoYazi, 116, 6);
+            x.fillStyle = ad; sigdir(x, V.firma, 130, 1380); x.textAlign = "center"; x.fillText(V.firma, 850, 620);
           } else if (DZ === "panel") {
             var mr = maske ? "#fff" : (susVar ? zit(VUR) : renkVurgu);
             x.strokeStyle = mr; x.lineWidth = 10; x.beginPath(); x.arc(300, 550, 190, 0, Math.PI * 2); x.stroke();
@@ -174,29 +215,25 @@
             x.fillStyle = mono; x.font = fnt(1000); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram.charAt(0), 1340, 470);
             x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 140, 900); x.fillText(V.firma, 130, 870);
           } else if (DZ === "minimal") {
-            x.fillStyle = mono; yuvarlak(x, 130, 130, 190, 190, 36); x.fill();
-            x.fillStyle = monoYazi; x.font = fnt(96); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 225, 232);
-            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 120, 1250); x.fillText(V.firma, 130, 830);
+            rozet(x, 225, 225, 95, mono, monoYazi, 96, 7);
+            x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 120, 1250); x.fillText(V.firma, 130, 830);
           } else if (DZ === "serit") {   // sol dikey şerit: monogram şeridin içinde
             var ms = maske ? "#fff" : (susVar ? zit(VUR) : renkVurgu);
             x.fillStyle = ms; x.font = fnt(96); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 105, 200);
             x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 136, 1340); x.fillText(V.firma, 280, 590);
           } else if (DZ === "bant") {    // ortadan geçen renk bandı; slogan bandın içinde
-            x.fillStyle = mono; yuvarlak(x, 130, 150, 170, 170, 34); x.fill();
-            x.fillStyle = monoYazi; x.font = fnt(88); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 215, 238);
-            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 136, 1440); x.fillText(V.firma, 130, 590);
+            rozet(x, 215, 235, 85, mono, monoYazi, 88, 3);
+            x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 136, 1440); x.fillText(V.firma, 130, 590);
           } else if (DZ === "muhur") {   // mühür halkası içinde monogram, sağda firma
             x.fillStyle = mono; x.beginPath(); x.arc(470, 550, 230, 0, Math.PI * 2); x.fill();
             x.fillStyle = monoYazi; x.font = fnt(190); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 470, 560);
             x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 112, 720); x.fillText(V.firma, 880, 590);
           } else if (DZ === "kose") {
-            x.fillStyle = mono; x.beginPath(); x.arc(250, 340, 120, 0, Math.PI * 2); x.fill();
-            x.fillStyle = monoYazi; x.font = fnt(100); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 250, 346);
-            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 124, 1060); x.fillText(V.firma, 130, 610);
+            rozet(x, 250, 340, 120, mono, monoYazi, 100, 6);
+            x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 124, 1060); x.fillText(V.firma, 130, 610);
           } else {
-            x.fillStyle = mono; x.beginPath(); x.arc(LOGO.mx, LOGO.my, LOGO.mr, 0, Math.PI * 2); x.fill();
-            x.fillStyle = monoYazi; x.font = fnt(150); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, LOGO.mx, LOGO.my + 8);
-            x.textAlign = "left"; x.textBaseline = "alphabetic"; x.fillStyle = ad; sigdir(x, V.firma, 128, 1040); x.fillText(V.firma, LOGO.nx, LOGO.ny);
+            rozet(x, LOGO.mx, LOGO.my, LOGO.mr, mono, monoYazi, 150, 8);
+            x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 128, 1040); x.fillText(V.firma, LOGO.nx, LOGO.ny);
           }
           x.restore();
         }
@@ -225,7 +262,7 @@
           x.restore();
         }
         function sloganCiz(x, n, caret, t, renk) { if (n <= 0) return; x.fillStyle = renk; x.font = "600 54px Inter"; x.textBaseline = "alphabetic"; yaz(x, V.slogan, n, DL.sl[0], DL.sl[1], DL.sl[2], caret, t); }
-        function finalZemin(x) { if (P === "kraft") { x.drawImage(kraft, 0, 0); } else zemin(x, ANA); }
+        function finalZemin(x) { if (P === "kraft") { x.drawImage(kraft, 0, 0); } else { zemin(x, ANA); motifCiz(x); } }
         function finalCiz(x, logoP, serit, slg, t) {
           finalZemin(x);
           var yazi = P === "varak" ? "#d8b25a" : YAZ, vur = P === "varak" ? "#d8b25a" : VUR;
