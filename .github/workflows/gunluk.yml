@@ -19,13 +19,16 @@ on:
       hesap: {description: "kartvizit | web | para", default: "para"}
       bicim: {description: "butce | aliskanlik | kapisma (yalnız para)", default: "butce"}
       deneme: {description: "true = paylaşmadan dene", default: "true"}
-concurrency:
-  group: yorumdan-durum      # aynı anda tek çalışma: durum deposunda çakışma olmasın
-  cancel-in-progress: false
 permissions:
   contents: read
 jobs:
   bolum:
+    # 2026-11-27: GitHub cron güvenilmez (12:15/12:30 hiç çalışmadı). Saatleri sunucu tetikler (VDS mcht-tetik-yorumdan, workflow_dispatch).
+    # Depo değişkeni VDS_TETIK=1 iken GitHub'ın kendi (gecikmeli) zamanlaması atlanır: sırada bekleyen işi iptal edemesin.
+    if: github.event_name != 'schedule' || vars.VDS_TETIK != '1'
+    concurrency:
+      group: yorumdan-durum      # aynı anda tek çalışma: durum deposunda çakışma olmasın (atlanan iş gruba girmez)
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 60   # Kartvizitçi 3B render ekran kartı olmadan ~25 dk
     env:

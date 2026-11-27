@@ -13,6 +13,7 @@ permissions:
   actions: write          # panel "Düzelt" → günlük iş akışını yeniden tetikleyebilsin
 jobs:
   senkron:
+    if: github.event_name != 'schedule' || vars.VDS_TETIK != '1'   # sunucu 15 dk'da bir tetikler (GitHub cron güvenilmez)
     runs-on: ubuntu-24.04
     timeout-minutes: 8
     env:
