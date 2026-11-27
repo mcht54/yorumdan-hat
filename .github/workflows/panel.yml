@@ -22,6 +22,7 @@ jobs:
       TZ: Europe/Istanbul
       GITHUB_TOKEN: ${{ github.token }}
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}   # yorum/DM taslakları önce Groq (Gemini bütçesi içerik üretimine)
       IG_PARA_ID: ${{ secrets.IG_PARA_ID }}
       IG_PARA_API: ${{ secrets.IG_PARA_API }}
       IG_PARA_TOKEN: ${{ secrets.IG_PARA_TOKEN }}
@@ -51,5 +52,7 @@ jobs:
           pip install -q requests numpy
           printf '%s' "${{ secrets.PANEL_ANAHTARI }}" > hat/.panel_anahtari && chmod 600 hat/.panel_anahtari
           python hat/panel.py > /dev/null 2> durum/panel-son-hata.log || echo "senkron hata verdi (ayrıntı özel durum deposunda)"
+          # yorum/DM → panel (cevap taslağı, müşteri adayı → Gelenler); içerik loga yazılmaz, hata akışı bozmaz
+          python hat/etkilesim.py > /dev/null 2>> durum/panel-son-hata.log || echo "etkileşim turu hata verdi (ayrıntı özel durum deposunda)"
           cd durum && git add -A && git -c user.name=yorumdan-hat -c user.email=yorumdan-hat@users.noreply.github.com commit -qm "panel senkron" || true
           for i in 1 2 3; do git push -q && break; git pull --rebase -q || { git rebase --abort; git -c user.name=yorumdan-hat -c user.email=yorumdan-hat@users.noreply.github.com pull --no-rebase -X ours --no-edit -q; }; done
