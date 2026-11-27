@@ -226,7 +226,17 @@ def ozet(simdi: dt.datetime | None = None) -> dict:
                     bolumler.append(pl)
     if any("günlük kota doldu" in x for x in log):
         uyarilar.append("Gemini bugün ücretsiz kotaya takıldı; yedek modeller denendi.")
-    return {"bolumler": bolumler[-120:], "ekler": {"yorumdan": {
+    # Yapay zekâ kota rozeti (2026-11-27): panel tablosunda her hesabın satırında "Yapay zekâ" (rakam/anahtar yok)
+    doldu, groq_ok, groq_bitti = (any("günlük kota doldu" in x for x in log), any("ile yazıldı (Gemini yoktu)" in x for x in log),
+                                  any("Groq ücretsiz kotası doldu" in x for x in log))
+    z = simdi.isoformat(timespec="seconds")
+    if doldu and groq_bitti:
+        kr = {"durum": "hata", "zaman": z, "mesaj": "Bugünkü ücretsiz metin kotası (Gemini + Groq yedeği) bitti; 11:00'de yenilenir"}
+    elif doldu:
+        kr = {"durum": "tamam", "zaman": z, "mesaj": "Gemini'nin bazı modelleri günlük kotaya takıldı; " + ("Groq yedeği yazdı" if groq_ok else "diğer modeller çalışıyor")}
+    else:
+        kr = {"durum": "tamam", "zaman": z, "mesaj": "Ücretsiz kota yeterli"}
+    return {"bolumler": bolumler[-120:], "ekler": {"baglanti": {t: {"gemini": kr} for t in ("kartvizit", "web", "para")}, "yorumdan": {
         "ayarlar": {"duraklat": durak, "mod": "canli" if canli else "deneme", "hesaplar": hesaplar},
         "uyarilar": uyarilar[:12], "zaman": simdi.isoformat(timespec="seconds")}}}
 
