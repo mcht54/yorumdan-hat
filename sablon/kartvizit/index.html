@@ -149,7 +149,10 @@
           panel:   { x0: 0,   ky: 560, sec: [40, 320, 1620, 400],  sl: [694, 650, "left"] },
           dev:     { x0: 110, ky: 880, sec: [100, 160, 1580, 840], sl: [134, 965, "left"] },
           minimal: { x0: 110, ky: 840, sec: [100, 110, 1320, 860], sl: [134, 935, "left"] },
-          kose:    { x0: 110, ky: 620, sec: [100, 190, 1260, 560], sl: [134, 715, "left"] }
+          kose:    { x0: 110, ky: 620, sec: [100, 190, 1260, 560], sl: [134, 715, "left"] },
+          serit:   { x0: 0,   ky: 560, sec: [250, 420, 1380, 210], sl: [284, 690, "left"] },
+          bant:    { x0: 110, ky: 560, sec: [100, 150, 1520, 480], sl: [134, 762, "left"] },
+          muhur:   { x0: 180, ky: 560, sec: [170, 200, 1450, 700], sl: [884, 668, "left"] }
         };
         var DL = DUZEN[DZ] || DUZEN.yatay; if (!DUZEN[DZ]) DZ = "yatay";
         var LOGO = { mx: 330, my: 470, mr: 175, nx: 560, ny: 500, sy: 610 };
@@ -174,6 +177,18 @@
             x.fillStyle = mono; yuvarlak(x, 130, 130, 190, 190, 36); x.fill();
             x.fillStyle = monoYazi; x.font = fnt(96); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 225, 232);
             x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 120, 1250); x.fillText(V.firma, 130, 830);
+          } else if (DZ === "serit") {   // sol dikey şerit: monogram şeridin içinde
+            var ms = maske ? "#fff" : (susVar ? zit(VUR) : renkVurgu);
+            x.fillStyle = ms; x.font = fnt(96); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 105, 200);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 136, 1340); x.fillText(V.firma, 280, 590);
+          } else if (DZ === "bant") {    // ortadan geçen renk bandı; slogan bandın içinde
+            x.fillStyle = mono; yuvarlak(x, 130, 150, 170, 170, 34); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(88); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 215, 238);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 136, 1440); x.fillText(V.firma, 130, 590);
+          } else if (DZ === "muhur") {   // mühür halkası içinde monogram, sağda firma
+            x.fillStyle = mono; x.beginPath(); x.arc(470, 550, 230, 0, Math.PI * 2); x.fill();
+            x.fillStyle = monoYazi; x.font = fnt(190); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 470, 560);
+            x.textBaseline = "alphabetic"; x.textAlign = "left"; x.fillStyle = ad; sigdir(x, V.firma, 112, 720); x.fillText(V.firma, 880, 590);
           } else if (DZ === "kose") {
             x.fillStyle = mono; x.beginPath(); x.arc(250, 340, 120, 0, Math.PI * 2); x.fill();
             x.fillStyle = monoYazi; x.font = fnt(100); x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(V.monogram, 250, 346);
@@ -197,6 +212,12 @@
           } else if (DZ === "panel") { x.fillRect(0, 0, 600 * p, TH);
           } else if (DZ === "dev") { x.fillRect(130, 690, 190 * p, 16);
           } else if (DZ === "minimal") { x.fillRect(TW - 74, TH * (1 - p), 74, TH * p);
+          } else if (DZ === "serit") { x.fillRect(0, 0, 210, TH * p);
+          } else if (DZ === "bant") { x.fillRect(0, 660, TW * p, 160);
+          } else if (DZ === "muhur") {
+            x.lineWidth = 12; x.beginPath(); x.arc(470, 550, 290, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); x.stroke();
+            x.lineWidth = 4; x.beginPath(); x.arc(470, 550, 320, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); x.stroke();
+            x.fillRect(884, 706, 150 * p, 10);
           } else if (DZ === "kose") {
             x.beginPath(); x.moveTo(TW - 760 * p, TH); x.lineTo(TW, TH - 560 * p); x.lineTo(TW, TH); x.closePath(); x.fill();
             x.globalAlpha = 0.45; x.lineWidth = 8; x.beginPath(); x.moveTo(TW - 900 * p, TH); x.lineTo(TW, TH - 664 * p); x.stroke();
@@ -210,7 +231,7 @@
           var yazi = P === "varak" ? "#d8b25a" : YAZ, vur = P === "varak" ? "#d8b25a" : VUR;
           susCiz(x, serit, VUR);
           logoCiz(x, logoP, yazi, vur, false, 1, serit > 0);
-          sloganCiz(x, Math.round(slg * V.slogan.length), slg > 0 && slg < 1, t, DZ === "panel" || DZ === "merkez" ? yazi : vur);
+          sloganCiz(x, Math.round(slg * V.slogan.length), slg > 0 && slg < 1, t, DZ === "bant" ? (P === "varak" ? yazi : zit(VUR)) : DZ === "panel" || DZ === "merkez" ? yazi : vur);
         }
         // maske dokusu (varak / lak / kabartma)
         mX.fillStyle = "#000"; mX.fillRect(0, 0, TW, TH); logoCiz(mX, 1, "#fff", "#fff", true);

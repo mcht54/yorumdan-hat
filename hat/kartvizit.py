@@ -14,7 +14,7 @@ from senaryo import anlatim
 from ses import dok, hizala, seslendir
 from uret import e, hazirla, miks, render
 
-DUZENLER = ["yatay", "merkez", "panel", "dev", "minimal", "kose"]
+DUZENLER = ["yatay", "merkez", "panel", "dev", "minimal", "kose", "serit", "bant", "muhur"]  # 2026-11-27: +serit, bant, mühür
 ARKA_MODLAR = ["acik", "ana", "vurgu"]
 
 

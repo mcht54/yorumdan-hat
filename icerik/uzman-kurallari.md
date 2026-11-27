@@ -128,3 +128,36 @@ Deneme sonucu: "abi uçlarından al", "bugün ne var?" gibi gerçek esnaf/müşt
 - Terzi/tadilat: "Bir paça kısaltma", "Usta yarın gelir", "İki dakikalık iş"
 - Her esnaf: "Numaranızı bulamadım", "Konum atar mısın?", "Açık mısınız?", "Kartınızı alabilir miyim?", "Yazarsın abi, sonra öderim"
 - Kapanış espri (callback) mutlaka açılıştaki cümleye ya da esnaf cümlesine geri döner, belirsiz söz oyunu olmaz.
+
+## Kartvizitçi yeni replikler ve sahneler (2026-11-27, Mücahit: "konu değişmesin, yeni tasarımlar yeni replikler")
+Seri aynı kalır (yorumdan gelen esnafa kartvizit). Bu bölüm yalnız çeşitlilik içindir; son 8 bölümde kullanılan cümle ve sahne tekrar edilmez.
+Kartta artık 9 düzen var (yeni: sol renk şeridi, ortadan geçen renk bandı, mühür halkası); düzeni sistem seçer, anlatımda düzen adı söylenmez.
+
+### Yeni sektörlerin gerçek cümleleri
+- Çiçekçi: "Kart yazalım mı?", "Bugün teslim olur mu?", "Gül kaç tane olsun?"
+- Kasap: "Az yağlı olsun", "Kıyma iki kere çekilsin", "Kuşbaşı mı yapalım?"
+- Kafe: "Şekersiz mi?", "Wifi şifresi ne?", "Bir tane daha çay"
+- Nalbur/hırdavat: "Bunun küçüğü var mı?", "Usta bunu sordu", "Vida bundan bir boy büyük"
+- Kırtasiye: "Fotokopi kaç para?", "Çıktı alabilir miyim?", "Spiral yapar mısınız?"
+- Oto yıkama: "İçi de yapılsın", "Kokusu vanilya olsun", "Akşama hazır olur mu?"
+- Kuyumcu: "Ayarı kaç?", "Gram ne oldu bugün?", "Bir de kutu verir misiniz?"
+- Nakliyat: "Asansör var mı?", "Kaç kat?", "Koliyi siz mi getiriyorsunuz?"
+- Fotoğrafçı: "Vesikalık acil", "Bir daha çekelim, gözüm kapandı", "Arka plan beyaz olsun"
+- Pet shop: "Mamasını değiştirmeyelim", "Isırır mı?", "Tasmanın büyüğü var mı?"
+
+### Yeni espri açıları (yalnız söz; ekranda ayrı sahne gerektirmez, kural 8 geçerli)
+- Cüzdan: "Bu sefer cüzdanda kaybolmayacak, rengi belli."
+- Masa yığını: "Masada on kart varsa ilk bu alınır" (iddia değil, tasarımcının esprili umudu olarak).
+- Rehber: "Numaranızı bulamadım" cümlesine kapanışta geri dönüş: "Artık bulur."
+- Usta onayı: dükkân sahibinin ağzından tek cümle: "Tamam, bu bizim."
+
+### Bilgi havuzuna ek (doğrulanmış; yalnız bunlar)
+- Türkiye'de yaygın kartvizit ölçüsü 8,5 x 5,5 cm'dir; kredi kartıyla neredeyse aynı boydadır, bu yüzden cüzdana sığar.
+- Pantone, aynı rengin her matbaada aynı basılması için kullanılan numaralı renk sistemidir.
+- Taşma payı: kenarda beyaz çizgi kalmasın diye tasarım, kesim çizgisinin birkaç milimetre dışına taşırılır.
+- Kuşe kâğıdın yüzeyi kaplamalıdır; renkleri daha canlı basar.
+
+### İlk saniye ve gönderme anı (kartvizite uyarlama)
+- İlk cümlede firma + gerilim + mümkünse yorumun gerçek rakamı (beğeni sayısı gibi, yalnız verilen gerçek veri): "Bir kasap yorum yazdı, on dört kişi beğendi; şimdi kartı biz çiziyoruz."
+- Videonun ortasında ya da sonunda izleyicinin aklına tanıdığı birini getiren bir tip olsun: "kartviziti on yıldır aynı olan usta", "numarası kartta silik çıkan abi", "kartı hep cebinden buruşuk çıkaran esnaf". Açıklamada bu tipe gönderme çağrısı yapılır ("Kartviziti on yıldır aynı olan esnafa gönder").
+- Kapanış yine yorum mekaniğine bağlanır: "Yoruma dükkânının adını yaz, sıradaki kart seninki olabilir."
