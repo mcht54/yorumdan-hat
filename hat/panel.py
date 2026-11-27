@@ -207,8 +207,8 @@ def ozet(simdi: dt.datetime | None = None) -> dict:
                 bolumler.append(_plan(tur, ig, simdi.date(), s, "hata", hata))
                 uyarilar.append(f"@{ig}: bugün bölüm çıkmadı — {hata}")
             elif simdi > calisma + dt.timedelta(minutes=GECIKME_DK):
-                bolumler.append(_plan(tur, ig, simdi.date(), s, "hata", "Hat bu saatte çalışmadı (Mac kapalı/uykuda olabilir)."))
-                uyarilar.append(f"@{ig}: bugünkü {s} çalışması yapılmadı (Mac kapalı/uykuda olabilir).")
+                bolumler.append(_plan(tur, ig, simdi.date(), s, "hata", "Bulut zamanlayıcısı bu saatte başlatmadı; panelde Düzelt ile yeniden başlatılabilir."))
+                uyarilar.append(f"@{ig}: bugünkü {s} çalışması yapılmadı (bulut zamanlayıcısı başlatmadı).")
             else:  # çalışma sürüyor
                 bolumler.append(_plan(tur, ig, simdi.date(), s, "sirada"))
         bolumler.append(_plan(tur, ig, simdi.date() + dt.timedelta(days=1), s, "sirada"))
