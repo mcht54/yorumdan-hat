@@ -11,6 +11,13 @@ import time
 import urllib.error
 import urllib.request
 
+try:
+    from gemini_havuz import GeminiHatasi, GunlukKota, Havuz, google_gunu, parmak  # noqa: F401
+    from gemini_havuz import anahtarlar as _havuz_anahtarlar
+except ImportError:  # paket olarak içe aktarılırsa (hat.ortak)
+    from .gemini_havuz import GeminiHatasi, GunlukKota, Havuz, google_gunu, parmak  # noqa: F401
+    from .gemini_havuz import anahtarlar as _havuz_anahtarlar
+
 KOK = pathlib.Path(__file__).resolve().parent.parent
 DURUM = KOK / "durum"
 CIKTI = KOK / "cikti"
@@ -70,54 +77,67 @@ class Kota(RuntimeError):
 
 # Günlük istek bütçesi (kullanıcı kararı: ücretsiz katman ASLA aşılmaz). Ücretsiz katman model başına günde yüzlerce
 # istek veriyor; hat günde 2 bölüm için ~10 istek harcar. Bu tavan, hata/döngüde bile katmanın çok altında kalmayı garanti eder.
+# 2026-11-28 anahtar havuzu: tavan ANAHTAR BAŞINADIR (toplam = anahtar sayısı × tavan; her anahtar ayrı Gmail'in ayrı
+# ücretsiz projesi). Canlı rezerv sabit kalır: denemeler toplam tavanın CANLI_REZERV kadar altında durur.
 GUNLUK_TAVAN = {"tts": 12, "metin": 60}
 CANLI_REZERV = {"tts": 10, "metin": 45}   # denemeler bunun altına inemez (5 canlı bölüm × ~2 ses denemesi)  # 2026-11-26: günde 4 video (Cüzdan Hocası 2 slot); ücretsiz katmanın altında, ödeme hesabı YOK
 
 
-def _butce(model: str) -> None:
-    import datetime as _dt
+def anahtarlar() -> list[str]:
+    """Gemini anahtar havuzu: GEMINI_API_KEY, GEMINI_API_KEY_2 … _9, virgüllü GEMINI_API_KEYS (ortam, sonra .env)."""
+    return _havuz_anahtarlar(os.environ, KOK / ".env")
+
+
+_HAVUZ = None
+
+
+def havuz() -> Havuz:
+    """Dolu işaretleri durum/gemini-havuz.json'da (yalnız anahtar parmak izi; durum deposuyla Mac ↔ Actions paylaşılır)."""
+    global _HAVUZ
+    if _HAVUZ is None:
+        _HAVUZ = Havuz(DURUM / "gemini-havuz.json", anahtarlar, gunluk=lambda m: gunluk(m))
+    return _HAVUZ
+
+
+def _butce(model: str, anahtar_sayisi: int = 1) -> None:
     tur = "tts" if "tts" in model else "metin"
     yol = DURUM / "gemini-sayac.json"
     # 2026-11-28: Google'ın ücretsiz günlük kotası Pasifik gece yarısı (TR 11:00) sıfırlanır → sayaç da o günü sayar
-    bugun = (_dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(hours=8)).date().isoformat()
+    bugun = google_gunu()
     try:
         v = json.loads(yol.read_text())
     except Exception:  # noqa: BLE001
         v = {}
     if v.get("gun") != bugun:
         v = {"gun": bugun, "tts": 0, "metin": 0}
-    if v[tur] >= GUNLUK_TAVAN[tur]:
-        raise Kota(f"{model}: hattın günlük {tur} bütçesi ({GUNLUK_TAVAN[tur]}) doldu, yarına kadar Gemini çağrılmaz")
+    tavan = GUNLUK_TAVAN[tur] * max(1, anahtar_sayisi)
+    if v[tur] >= tavan:
+        raise Kota(f"{model}: hattın günlük {tur} bütçesi ({tavan} = {max(1, anahtar_sayisi)} anahtar × {GUNLUK_TAVAN[tur]}) doldu, "
+                   "yarına kadar Gemini çağrılmaz")
     # deneme/kuru bölümler canlı paylaşımların payını yemesin (2026-11-28: 7 deneme bölümü günün sesini bitirdi, 2 video kaçtı)
-    if os.environ.get("YORUMDAN_DENEME") == "1" and v[tur] >= GUNLUK_TAVAN[tur] - CANLI_REZERV[tur]:
+    if os.environ.get("YORUMDAN_DENEME") == "1" and v[tur] >= tavan - CANLI_REZERV[tur]:
         raise Kota(f"{model}: deneme bölümü için {tur} payı bitti (canlı paylaşımlara {CANLI_REZERV[tur]} ayrıldı)")
     v[tur] += 1
+    v["anahtar"] = max(1, anahtar_sayisi)
     yol.write_text(json.dumps(v))
 
 
 def gemini(model: str, govde: dict, zaman: int = 180) -> dict:
-    anahtar = env("GEMINI_API_KEY")
-    if not anahtar:
+    """Anahtar havuzuyla çağırır: günlük kotası dolan anahtar (model × anahtar) bugün atlanır, sıradakine geçilir.
+    Hepsi doluysa Kota (çağıran Groq yedeğine düşer). Bütçe sayacı yalnız gerçekten istek atılacaksa artar."""
+    h = havuz()
+    n = h.sayi()
+    if not n:
         raise RuntimeError("GEMINI_API_KEY yok (.env)")
-    _butce(model)
-    son = None
-    for deneme in range(3):
-        req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
-                                     data=json.dumps(govde).encode(), headers={"Content-Type": "application/json", "x-goog-api-key": anahtar})
-        try:
-            with urllib.request.urlopen(req, timeout=zaman) as r:
-                return json.load(r)
-        except urllib.error.HTTPError as e:
-            son = e
-            metin = e.read().decode("utf-8", "replace")
-            if e.code == 429 and "PerDay" in metin:
-                raise Kota(f"{model}: günlük kota doldu") from e
-            if e.code in (429, 500, 502, 503, 504):
-                time.sleep(10 * (deneme + 1)); continue
-            raise RuntimeError(f"gemini {model} {e.code}: {metin[:300]}") from e
-        except (TimeoutError, urllib.error.URLError) as e:
-            son = e; time.sleep(8)
-    raise RuntimeError(f"gemini {model}: {son}")
+    if h.hepsi_dolu(model):
+        raise Kota(f"{model}: {n} anahtarın hepsinin bugünkü ücretsiz kotası dolu (TR 11:00'de yenilenir)")
+    _butce(model, n)
+    try:
+        return h.cagir(model, govde, zaman=zaman, deneme=3)
+    except GunlukKota as e:
+        raise Kota(str(e)) from e
+    except GeminiHatasi as e:
+        raise RuntimeError(f"gemini {e}") from e
 
 
 _modeller: list[str] | None = None
@@ -127,12 +147,15 @@ def metin_modelleri() -> list[str]:
     """Hesabın erişebildiği flash modelleri (kararlı > önizleme, yeni > eski, tam > lite). Ücretsiz katman."""
     global _modeller
     if _modeller is None:
-        try:
-            req = urllib.request.Request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", headers={"x-goog-api-key": env("GEMINI_API_KEY")})
-            adlar = [m["name"].removeprefix("models/") for m in json.load(urllib.request.urlopen(req, timeout=30)).get("models", [])
-                     if "generateContent" in m.get("supportedGenerationMethods", [])]
-        except Exception as e:  # noqa: BLE001
-            gunluk(f"model listesi alınamadı: {e}"); adlar = []
+        adlar = []
+        for k in anahtarlar()[:3]:   # ilk anahtar geçersizse sıradakiyle listele
+            try:
+                req = urllib.request.Request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", headers={"x-goog-api-key": k})
+                adlar = [m["name"].removeprefix("models/") for m in json.load(urllib.request.urlopen(req, timeout=30)).get("models", [])
+                         if "generateContent" in m.get("supportedGenerationMethods", [])]
+                break
+            except Exception as e:  # noqa: BLE001
+                gunluk(f"model listesi alınamadı [{parmak(k)}]: {type(e).__name__}")
         atla = ("image", "tts", "audio", "live", "embed", "vision", "thinking", "learnlm", "robotics", "computer")
         def puan(ad):
             m = re.search(r"gemini-(\d+(?:\.\d+)?)", ad)
