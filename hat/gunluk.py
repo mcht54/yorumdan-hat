@@ -330,6 +330,8 @@ def main():
     ap.add_argument("--deneme", action="store_true", help="örnek yorumlarla, paylaşmadan")
     ap.add_argument("--bicim", choices=["butce", "aliskanlik", "kapisma"], default="butce", help="Cüzdan Hocası biçimi (yalnız --hesap para)")
     a = ap.parse_args()
+    if a.deneme or ayarlar().get("mod") != "canli":
+        os.environ["YORUMDAN_DENEME"] = "1"   # Gemini bütçesinde canlı paylaşımların payına dokunmaz (ortak._butce)
     from ortak import durum_esitle
     durum_esitle("al")
     panel.senkron()  # panelden "duraklat/devam" iş emri varsa önce al (panel düşükse hat yine çalışır)

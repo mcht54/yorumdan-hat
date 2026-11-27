@@ -70,14 +70,16 @@ class Kota(RuntimeError):
 
 # Günlük istek bütçesi (kullanıcı kararı: ücretsiz katman ASLA aşılmaz). Ücretsiz katman model başına günde yüzlerce
 # istek veriyor; hat günde 2 bölüm için ~10 istek harcar. Bu tavan, hata/döngüde bile katmanın çok altında kalmayı garanti eder.
-GUNLUK_TAVAN = {"tts": 12, "metin": 60}  # 2026-11-26: günde 4 video (Cüzdan Hocası 2 slot); ücretsiz katmanın altında, ödeme hesabı YOK
+GUNLUK_TAVAN = {"tts": 12, "metin": 60}
+CANLI_REZERV = {"tts": 10, "metin": 45}   # denemeler bunun altına inemez (5 canlı bölüm × ~2 ses denemesi)  # 2026-11-26: günde 4 video (Cüzdan Hocası 2 slot); ücretsiz katmanın altında, ödeme hesabı YOK
 
 
 def _butce(model: str) -> None:
     import datetime as _dt
     tur = "tts" if "tts" in model else "metin"
     yol = DURUM / "gemini-sayac.json"
-    bugun = _dt.date.today().isoformat()
+    # 2026-11-28: Google'ın ücretsiz günlük kotası Pasifik gece yarısı (TR 11:00) sıfırlanır → sayaç da o günü sayar
+    bugun = (_dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(hours=8)).date().isoformat()
     try:
         v = json.loads(yol.read_text())
     except Exception:  # noqa: BLE001
@@ -86,6 +88,9 @@ def _butce(model: str) -> None:
         v = {"gun": bugun, "tts": 0, "metin": 0}
     if v[tur] >= GUNLUK_TAVAN[tur]:
         raise Kota(f"{model}: hattın günlük {tur} bütçesi ({GUNLUK_TAVAN[tur]}) doldu, yarına kadar Gemini çağrılmaz")
+    # deneme/kuru bölümler canlı paylaşımların payını yemesin (2026-11-28: 7 deneme bölümü günün sesini bitirdi, 2 video kaçtı)
+    if os.environ.get("YORUMDAN_DENEME") == "1" and v[tur] >= GUNLUK_TAVAN[tur] - CANLI_REZERV[tur]:
+        raise Kota(f"{model}: deneme bölümü için {tur} payı bitti (canlı paylaşımlara {CANLI_REZERV[tur]} ayrıldı)")
     v[tur] += 1
     yol.write_text(json.dumps(v))
 
