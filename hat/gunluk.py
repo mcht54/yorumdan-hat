@@ -99,6 +99,55 @@ def radar_metni(tur: str) -> str:
     return radar.yazar_metni(o) + (("\n\n" + g) if g else "")
 
 
+def _ara_kaydet(kd: str, kayit: list, satir: dict) -> None:
+    """Bir platform sonucu (bağlantı / belirsiz) alınır alınmaz kayda yazar ve durum deposuna gönderir: sonraki adımlar çökse ya da
+    süreç öldürülse bile bir sonraki koşu "bugün zaten paylaşıldı" kapısında durur, aynı videoyu ikinci kez paylaşmaz."""
+    yaz(kd, kayit + [satir])
+    try:
+        from ortak import durum_esitle
+        durum_esitle("ver")
+    except Exception as e:  # noqa: BLE001  (yerel dosya yazıldı; push sonra finally'de yeniden denenir)
+        gunluk(f"durum ara kaydı gönderilemedi: {type(e).__name__}")
+
+
+def _platformlara_paylas(tur: str, kd: str, kayit: list, satir: dict, cikti, metin: str, ortaklar: list[str],
+                         fb_acik: bool, yt_acik: bool, ig_kullanici: str) -> dict | None:
+    """Instagram Reels → Facebook Reels → YouTube Shorts. Panelde kapalı platform atlanır. Her sonuç anında kalıcı kaydedilir.
+    Instagram kesin hata (yayından önce) → istisna yükselir, kayıt yazılmaz, sonraki koşu yeniden dener.
+    İstek gittikten sonra yanıtsızlık (BelirsizYayin) → *_belirsiz yazılır; günlük koşu da Düzelt de ASLA yeniden göndermez."""
+    from instagram import BelirsizYayin, facebook_reels, youtube_shorts
+    kapali = platform_ayar.kapalilar(tur)
+    if kapali:
+        satir["panelde_kapali"] = kapali
+        gunluk(f"{tur}: {', '.join(kapali)} → {platform_ayar.NOT}")
+    b = None
+    if "instagram" not in kapali:
+        try:
+            b = Instagram(tur).reels(cikti, metin, ortaklar=ortaklar)
+            satir.update({"medya_id": b["id"], "link": b.get("permalink")})
+        except BelirsizYayin as e:
+            gunluk(f"{tur}: Instagram Reels BELİRSİZ, elle kontrol (otomatik yeniden paylaşılmaz): {e}")
+            satir.update(ig_belirsiz=str(e)[:200], yayin_denendi=True)
+        _ara_kaydet(kd, kayit, satir)
+    else:
+        satir["yayin_denendi"] = True   # Instagram kapalı: Facebook/YouTube denemesi de "bugün zaten paylaşıldı" kapısını kapatır
+    for anahtar, ad, acik_, lk, hk, bk, fn in (
+            ("facebook", "Facebook Reels", fb_acik, "fb_link", "fb_hata", "fb_belirsiz", lambda: facebook_reels(tur, cikti, metin)),
+            ("youtube", "YouTube Shorts", yt_acik, "yt_link", "yt_hata", "yt_belirsiz", lambda: youtube_shorts(tur, cikti, metin, ig_kullanici))):
+        if not acik_ or anahtar in kapali:
+            continue
+        try:
+            satir[lk] = fn()
+        except BelirsizYayin as e:   # gitmiş olabilir: Düzelt bunu yeniden göndermez
+            gunluk(f"{tur}: {ad} BELİRSİZ, elle kontrol (otomatik yeniden paylaşılmaz): {e}")
+            satir[bk] = str(e)[:200]
+        except Exception as e:  # noqa: BLE001  (kesin hata: panel nedeni gösterir, "Düzelt" yeniden dener; IG paylaşımını bozmaz)
+            gunluk(f"{tur}: {ad} paylaşılamadı: {e}")
+            satir[hk] = str(e)[:200]
+        _ara_kaydet(kd, kayit, satir)
+    return b
+
+
 def bolum_para(deneme: bool, bicim: str = "butce") -> dict | None:
     """Cüzdan Hocası: butce (20:30) = yorumdan maaş/kira → bütçe planı; aliskanlik (12:30) = yorumdan alışkanlık → yıllık hesap.
     Bütün tutarları kod hesaplar → anlatımlı maskot videosu → paylaş."""
@@ -163,28 +212,8 @@ def bolum_para(deneme: bool, bicim: str = "butce") -> dict | None:
              "yorum_id": k.get("yorum_id"), "senaryo_kaynak": s.get("_kaynak"), "video": str(cikti), "medya_id": None}
     if canli:
         ig = Instagram(tur)
-        kapali = platform_ayar.kapalilar(tur)
-        if kapali:
-            satir["panelde_kapali"] = kapali
-            gunluk(f"para: {', '.join(kapali)} → {platform_ayar.NOT}")
-        b = None
-        if "instagram" not in kapali:
-            b = ig.reels(cikti, metin, ortaklar=list(h.get("ortak", [])))
-            satir.update({"medya_id": b["id"], "link": b.get("permalink")})
-        else:
-            satir["yayin_denendi"] = True   # Instagram kapalı: Facebook/YouTube denemesi de "bugün zaten paylaşıldı" kapısını kapatır
-        if ay.get("facebook_reels", True) and env("META_PARA_PAGE_ID") and "facebook" not in kapali:
-            try:
-                from instagram import facebook_reels
-                satir["fb_link"] = facebook_reels(tur, cikti, metin)
-            except Exception as ex:  # noqa: BLE001
-                gunluk(f"para: Facebook Reels paylaşılamadı: {ex}"); satir["fb_hata"] = str(ex)[:200]
-        if ay.get("youtube", True) and "youtube" not in kapali:
-            try:
-                from instagram import youtube_shorts
-                satir["yt_link"] = youtube_shorts(tur, cikti, metin, h.get("ig_kullanici", ""))
-            except Exception as ex:  # noqa: BLE001
-                gunluk(f"para: YouTube Shorts paylaşılamadı: {ex}"); satir["yt_hata"] = str(ex)[:200]
+        b = _platformlara_paylas(tur, kd, kayit, satir, cikti, metin, list(h.get("ortak", [])),
+                                 ay.get("facebook_reels", True) and bool(env("META_PARA_PAGE_ID")), ay.get("youtube", True), h.get("ig_kullanici", ""))
         try:
             if b is not None:   # Instagram panelde kapalıysa ilk yorum/yanıt yok (hata değil)
                 ig.yorum_yaz(b["id"], {"butce": h.get("ilk_yorum") or para.KAPANIS,
@@ -270,33 +299,11 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
                    "duzen": r.get("duzen"), "arka_mod": r.get("arka_mod"), "rozet": r.get("rozet"), "motif": r.get("motif"), "varyant": r.get("varyant"), "senaryo_kaynak": s.get("_kaynak"), "kaynak": firma["kaynak"], "kullanici": firma.get("kullanici"), "medya_id": None}
     if canli:
         ig = Instagram(tur)
-        kapali = platform_ayar.kapalilar(tur)
-        if kapali:
-            kayit_satir["panelde_kapali"] = kapali
-            gunluk(f"{tur}: {', '.join(kapali)} → {platform_ayar.NOT}")
         ortaklar = list(h.get("ortak", []))
         if firma.get("kaynak") == "yorum" and firma.get("kendisi") and firma.get("kullanici"):
             ortaklar = [firma["kullanici"]] + ortaklar
-        b = None
-        if "instagram" not in kapali:
-            b = ig.reels(cikti, metin, ortaklar=ortaklar)
-            kayit_satir.update({"medya_id": b["id"], "link": b.get("permalink")})
-        else:
-            kayit_satir["yayin_denendi"] = True   # Instagram kapalı: Facebook/YouTube denemesi de "bugün zaten paylaşıldı" kapısını kapatır
-        if ay.get("facebook_reels", True) and "facebook" not in kapali:   # aynı video hesabın Facebook sayfasına da (hata IG paylaşımını bozmaz)
-            try:
-                from instagram import facebook_reels
-                kayit_satir["fb_link"] = facebook_reels(tur, cikti, metin)
-            except Exception as e:  # noqa: BLE001
-                gunluk(f"{tur}: Facebook Reels paylaşılamadı: {e}")
-                kayit_satir["fb_hata"] = str(e)[:200]  # panel tablosu nedeni gösterir, "Düzelt" yeniden dener
-        if ay.get("youtube", True) and "youtube" not in kapali:   # Mücahit Çakır YouTube kanalına Shorts (hata IG paylaşımını bozmaz)
-            try:
-                from instagram import youtube_shorts
-                kayit_satir["yt_link"] = youtube_shorts(tur, cikti, metin, h.get("ig_kullanici", ""))
-            except Exception as e:  # noqa: BLE001
-                gunluk(f"{tur}: YouTube Shorts paylaşılamadı: {e}")
-                kayit_satir["yt_hata"] = str(e)[:200]
+        b = _platformlara_paylas(tur, kd, kayit, kayit_satir, cikti, metin, ortaklar,
+                                 ay.get("facebook_reels", True), ay.get("youtube", True), h.get("ig_kullanici", ""))
         try:
             if b is not None:   # Instagram panelde kapalıysa ilk yorum/yanıt yok (hata değil)
                 ig.yorum_yaz(b["id"], ay["ilk_yorum"])

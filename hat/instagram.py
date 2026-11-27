@@ -19,6 +19,33 @@ class InstagramHatasi(RuntimeError):
     pass
 
 
+class BelirsizYayin(RuntimeError):
+    """Yayımlayan istek platforma GİTTİ ama sonucu alınamadı/okunamadı (zaman aşımı, bağlantı kopması, 5xx, JSON olmayan yanıt):
+    paylaşım gerçekleşmiş olabilir → kayda *_belirsiz yazılır, ASLA otomatik yeniden gönderilmez (Düzelt dahil), elle kontrol."""
+
+
+def _yayin_istegi(yontem: str, url: str, ad: str, **k) -> dict:
+    """Geri alınamaz (yayımlayan) istek. Bağlantı hiç kurulamadıysa (ConnectTimeout) istek gitmemiştir → InstagramHatasi
+    (yeniden denenebilir). Diğer ağ hataları, 5xx, okunamayan yanıt → BelirsizYayin. 4xx: platform açıkça reddetti → InstagramHatasi."""
+    try:
+        r = requests.request(yontem, url, **k)
+    except requests.ConnectTimeout as e:
+        raise InstagramHatasi(f"{ad}: bağlantı kurulamadı (istek gitmedi)") from e
+    except requests.RequestException as e:
+        raise BelirsizYayin(f"{ad}: istek gönderildi, yanıt alınamadı ({type(e).__name__})") from e
+    if r.status_code >= 500:
+        raise BelirsizYayin(f"{ad}: platform {r.status_code} döndü; yayımlanmış olabilir")
+    try:
+        v = r.json()
+    except ValueError as e:
+        if r.ok:
+            raise BelirsizYayin(f"{ad}: yanıt okunamadı (JSON değil)") from e
+        v = {"error": r.text[:200]}
+    if r.status_code >= 400 or (isinstance(v, dict) and "error" in v):
+        raise InstagramHatasi(f"{ad} {r.status_code}: {str(v.get('error', v) if isinstance(v, dict) else v)[:300]}")
+    return v
+
+
 class Instagram:
     def __init__(self, hesap: str):
         k = hesap.upper()
@@ -100,14 +127,21 @@ class Instagram:
                 gunluk(f"yükleme reddedildi, {90 * (tekrar + 1)} sn sonra yeniden denenecek")
                 time.sleep(90 * (tekrar + 1))
         for deneme in range(5):
-            try:
-                m = self._istek("POST", f"{self.kimlik}/media_publish", creation_id=kap)
+            try:   # "not ready" Instagram'ın açık reddi (yayımlanmadı) → bekleyip aynı kapsayıcıyla yeniden; yanıtsızlık → BelirsizYayin
+                m = _yayin_istegi("POST", f"{self.kok}/{self.kimlik}/media_publish", "instagram media_publish", timeout=120,
+                                  data={"creation_id": kap, "access_token": self.anahtar})
                 break
             except InstagramHatasi as e:
                 if "not ready" in str(e).lower() and deneme < 4:
                     time.sleep(15); continue
                 raise
-        b = self._istek("GET", m["id"], fields="id,permalink,timestamp")
+        if not m.get("id"):
+            raise BelirsizYayin("instagram media_publish: yanıtta medya kimliği yok")
+        try:   # yayın TAMAM: bağlantı okunamasa da medya kimliği döner (yeniden paylaşılmaz)
+            b = self._istek("GET", m["id"], fields="id,permalink,timestamp")
+        except InstagramHatasi as e:
+            gunluk(f"Reels yayında ama bağlantısı okunamadı ({e}); medya {m['id']}")
+            b = {"id": m["id"], "permalink": None}
         gunluk(f"Reels yayında: {b.get('permalink')}")
         return b
 
@@ -156,10 +190,10 @@ def facebook_reels(hesap: str, video: Path, aciklama: str) -> str:
                       headers={"Authorization": f"OAuth {t}", "offset": "0", "file_size": str(len(veri))})
     if not u.ok:
         raise InstagramHatasi(f"facebook yükleme {u.status_code}: {u.text[:200]}")
-    s = requests.post(f"{g}/{sayfa}/video_reels", timeout=120, data={"upload_phase": "finish", "video_id": vid,
-                      "video_state": "PUBLISHED", "description": aciklama, "access_token": t})
-    if not s.ok or s.json().get("success") is not True:
-        raise InstagramHatasi(f"facebook yayın {s.status_code}: {s.text[:200]}")
+    j = _yayin_istegi("POST", f"{g}/{sayfa}/video_reels", f"facebook yayın (video {vid})", timeout=120, data={
+        "upload_phase": "finish", "video_id": vid, "video_state": "PUBLISHED", "description": aciklama, "access_token": t})
+    if j.get("success") is not True:   # Meta açıkça başarısız dedi: yayımlanmadı
+        raise InstagramHatasi(f"facebook yayın başarısız: {str(j)[:200]}")
     gunluk(f"Facebook Reels yayında: https://www.facebook.com/reel/{vid}")
     return f"https://www.facebook.com/reel/{vid}"
 
@@ -204,9 +238,10 @@ def youtube_shorts(hesap: str, video: Path, metin: str, ig_kullanici: str) -> st
                       headers={"Authorization": f"Bearer {a}", "X-Upload-Content-Type": "video/mp4",
                                "X-Upload-Content-Length": str(video.stat().st_size)}, json=govde, timeout=60)
     b.raise_for_status()
-    with open(video, "rb") as f:
-        y = requests.put(b.headers["Location"], data=f, headers={"Content-Type": "video/mp4"}, timeout=900)
-    y.raise_for_status()
-    link = "https://youtube.com/shorts/" + y.json()["id"]
+    with open(video, "rb") as f:   # asıl yükleme = yayın: gittikten sonra yanıtsızlık → BelirsizYayin
+        y = _yayin_istegi("PUT", b.headers["Location"], "youtube yükleme", data=f, headers={"Content-Type": "video/mp4"}, timeout=900)
+    if not y.get("id"):
+        raise BelirsizYayin("youtube yükleme: yanıtta video kimliği yok")
+    link = "https://youtube.com/shorts/" + y["id"]
     gunluk(f"YouTube Shorts yayında: {link}")
     return link

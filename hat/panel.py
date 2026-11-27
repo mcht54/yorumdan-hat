@@ -123,6 +123,8 @@ def _ek_platformlar(k: dict) -> list[dict]:
     for anahtar, ad, lk, hk in (("facebook", "Facebook Reels", "fb_link", "fb_hata"), ("youtube", "YouTube Shorts", "yt_link", "yt_hata")):
         if str(k.get(lk) or "").startswith("https://"):
             out.append({"anahtar": anahtar, "ad": ad, "durum": "paylasildi", "link": k[lk]})
+        elif k.get(lk[:2] + "_belirsiz"):
+            out.append({"anahtar": anahtar, "ad": ad, "durum": "hata", "link": None, "not": "Sonuç alınamadı, paylaşılmış olabilir — elle kontrol et (otomatik yeniden gönderilmez)"})
         elif k.get(hk):
             out.append({"anahtar": anahtar, "ad": ad, "durum": "hata", "link": None, "not": _hata_sinifi(k[hk])})
     return out
@@ -160,8 +162,9 @@ def _bolum(tur: str, k: dict, ig: str) -> dict:
     return {
         "id": f"{k.get('_on') or tur}-{k.get('tarih')}", "gun": gun, "saat": saat_, "baslik": k.get("firma") or "?", "bolum_no": k.get("gun"),
         "sektor": str(k.get("sektor") or "")[:40], "konu": f"@{ig}", "durum": "yayinlandi" if yayinda else "uretildi",
-        "platformlar": [*([] if ig_kapali else [{"anahtar": "instagram", "ad": "Instagram Reels",
-                                                  "durum": "paylasildi" if k.get("medya_id") else "bekliyor", "link": link}]),
+        "platformlar": [*([] if ig_kapali else [{"anahtar": "instagram", "ad": "Instagram Reels", "link": link,
+                                                  **({"durum": "paylasildi"} if k.get("medya_id") else
+                                                     {"durum": "hata", "not": "Sonuç alınamadı, paylaşılmış olabilir — elle kontrol et (otomatik yeniden gönderilmez)"} if k.get("ig_belirsiz") else {"durum": "bekliyor"})}]),
                         *_ek_platformlar(k)],
         "satirlar": [], "duzenlenebilir": False, "kilit_nedeni": "Bu hat panelden düzenlenmez.",
         "yorumdan": {"hesap": tur, "ig_kullanici": ig, "firma": k.get("firma"), "sektor": k.get("sektor"), "gun_no": k.get("gun"),
@@ -304,7 +307,7 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
     paylaşımı önler). Instagram'a gitmiş videoyu Instagram'a yeniden GÖNDERMEZ."""
     import subprocess
     import sys
-    from instagram import Instagram, facebook_reels, youtube_shorts
+    from instagram import BelirsizYayin, Instagram, facebook_reels, youtube_shorts
     simdi = simdi or dt.datetime.now(TR)
     if tur not in HESAPLAR:
         return {"durum": "sorun", "adimlar": [{"ad": "Hesap", "durum": "hata", "mesaj": "Bu hat yalnız Kartvizitçi, Siteci Abi ve Cüzdan Hocası hesaplarını yönetir."}], "eylemler": []}
@@ -340,8 +343,8 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
         for anahtar, ad, lk, hk, acik, fn in (
                 ("facebook", "Facebook Reels", "fb_link", "fb_hata", ay.get("facebook_reels", True), lambda: facebook_reels(tur, video, metin)),
                 ("youtube", "YouTube Shorts", "yt_link", "yt_hata", ay.get("youtube", True), lambda: youtube_shorts(tur, video, metin, h.get("ig_kullanici", "")))):
-            if not acik or not platform_ayar.acik(tur, anahtar) or k.get(lk) or not k.get(hk):
-                continue  # panelde kapatılan platform Düzelt'te de yeniden denenmez
+            if not acik or not platform_ayar.acik(tur, anahtar) or k.get(lk) or not k.get(hk) or k.get(lk[:2] + "_belirsiz"):
+                continue  # panelde kapatılan ya da sonucu belirsiz (gitmiş olabilir) platform Düzelt'te yeniden denenmez
             if not video.exists() or not metin:
                 adimlar.append({"ad": f"{ad} yeniden gönderme", "durum": "hata", "mesaj": "Video ya da açıklama dosyası bulunamadı"})
                 continue
@@ -349,13 +352,20 @@ def duzelt_uygula(tur: str | None, simdi: dt.datetime | None = None) -> dict:
                 k[lk] = fn()
                 k.pop(hk, None)
                 adimlar.append({"ad": f"{ad} yeniden gönderildi", "durum": "tamam", "mesaj": None})
+            except BelirsizYayin as e:   # gitmiş olabilir: bir daha (Düzelt dahil) gönderilmez
+                k[lk[:2] + "_belirsiz"] = str(e)[:200]
+                k.pop(hk, None)
+                adimlar.append({"ad": f"{ad} sonucu belirsiz", "durum": "uyari", "mesaj": "Sonuç alınamadı, paylaşılmış olabilir — elle kontrol et"})
             except Exception as e:  # noqa: BLE001
                 k[hk] = str(e)[:200]
                 adimlar.append({"ad": f"{ad} hâlâ gönderilemiyor", "durum": "hata", "mesaj": _hata_sinifi(str(e))})
                 if anahtar == "facebook" and META_ANAHTAR not in eylemler:
                     eylemler.append(META_ANAHTAR)
         yaz(kd, kayit)
-        if not any(a["ad"].endswith(("gönderildi", "gönderilemiyor")) for a in adimlar):
+        for anahtar, ad, bk in (("instagram", "Instagram Reels", "ig_belirsiz"), ("facebook", "Facebook Reels", "fb_belirsiz"), ("youtube", "YouTube Shorts", "yt_belirsiz")):
+            if k.get(bk) and not any(a["ad"] == f"{ad} sonucu belirsiz" for a in adimlar):
+                adimlar.append({"ad": f"{ad} sonucu belirsiz", "durum": "uyari", "mesaj": "Sonuç alınamadı, paylaşılmış olabilir — elle kontrol et (otomatik yeniden gönderilmez)"})
+        if not any(a["ad"].endswith(("gönderildi", "gönderilemiyor", "belirsiz")) for a in adimlar):
             adimlar.append({"ad": "Bugünkü bölüm", "durum": "tamam", "mesaj": "Yayında; yeniden gönderilecek hata yok."})
     else:
         hh, mm = map(int, saat(tur).split(":"))
