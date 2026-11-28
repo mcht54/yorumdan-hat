@@ -1,0 +1,27 @@
+{
+ "_not": "Site Mucidi'de kalıbı olmayan sektörler (2026-11-28: matbaa tamirci kalıbına düşmüş, tamir/montaj kartları ve atölye fotoğrafı çıkmıştı). anahtar: firma adı/sektöründe geçerse bu yama uygulanır; taban: düzeni kullanılacak Site Mucidi kalıbı; fotolar icerik/yama/<ad>/ altında, kaynakları kaynak.json (açıklamaya yazılır). Metinlerde sayı/yıl/ödül gibi doğrulanamayan iddia YOK.",
+ "matbaa": {
+  "anahtar": ["matbaa", "baskı", "baski", "basım", "basim", "ofset", "dijital baskı", "kartvizit", "broşür", "brosur", "etiket baskı", "promosyon baskı"],
+  "taban": "yerel-hizmet",
+  "sektor_ad": "matbaa",
+  "slogan": "Kartvizitten kataloğa baskı işleriniz",
+  "hero": {"eyebrow": "Matbaa · dijital ve ofset baskı", "title": "Baskı işleriniz zamanında, renkleri doğru", "subtitle": "Kartvizit, broşür, katalog ve kurumsal evrakınızı tasarımdan teslimata kadar tek yerden hazırlıyoruz.", "ctaLabel": "Fiyat isteyin", "foto": "salon.jpg"},
+  "hizmetler": {"title": "Neler basıyoruz", "items": [
+   {"title": "Kartvizit ve kurumsal kimlik", "text": "Kartvizit, antetli kâğıt, zarf ve dosya; markanıza uygun kâğıt seçimiyle.", "foto": "kapak-yakin.jpg"},
+   {"title": "Broşür ve katalog", "text": "Tanıtım broşürü, el ilanı ve ürün kataloğu; katlama ve ciltleme dahil.", "foto": "ofset-dort-renk.jpg"},
+   {"title": "Ofset baskı", "text": "Yüksek adetli işlerde ekonomik ve renk tutarlı baskı.", "foto": "ofset-salon.jpg"},
+   {"title": "Dijital baskı", "text": "Az adetli ve acil işler için hızlı dijital baskı.", "foto": "ofset-makine.jpg"}]},
+  "surec": {"title": "Nasıl çalışıyoruz", "items": [
+   {"title": "İşinizi anlatın", "text": "Ürün, adet ve ölçüyü yazın; dosyanız yoksa tasarımını birlikte hazırlayalım."},
+   {"title": "Prova ve onay", "text": "Baskıdan önce provayı gönderiyor, onayınızı almadan makineyi çalıştırmıyoruz."},
+   {"title": "Baskı ve teslim", "text": "İşiniz basılıp kontrol edildikten sonra paketlenip teslim edilir."}]},
+  "hakkimizda": {"title": "Hakkımızda", "text": "Kartvizitten kataloğa her baskı işini aynı özenle hazırlayan bir matbaayız. Kâğıt ve renk seçiminde yol gösterir, baskıdan önce provayla onay alırız.\n\nAz adetli acil işlerde dijital, yüksek adetli işlerde ofset baskıyla bütçenize en uygun yolu öneririz.", "foto": "atolye-vitrin.jpg", "foto2": "ofset-salon.jpg"},
+  "galeri": {"title": "Baskı salonumuzdan", "fotolar": ["ofset-makine.jpg", "kapak-yakin.jpg", "salon.jpg"]},
+  "sss": {"title": "Sık sorulan sorular", "items": [
+   {"question": "Tasarımım yok, yine de basabilir misiniz?", "answer": "Evet, tasarımı birlikte hazırlayıp onayınızdan sonra baskıya alıyoruz."},
+   {"question": "Az adet basıyor musunuz?", "answer": "Az adetli işleri dijital baskıyla hızlıca hazırlıyoruz."},
+   {"question": "Baskıdan önce görebilir miyim?", "answer": "Her işte baskı öncesi prova gönderiyor, onayınızı alıyoruz."}]},
+  "cagri": {"title": "Baskı işiniz mi var?", "text": "Ürünü, adedi ve ölçüyü yazın; size fiyat ve teslim süresiyle dönelim.", "buttonLabel": "Fiyat isteyin"},
+  "iletisim": {"title": "Bize ulaşın", "text": "Adresimiz ve yol tarifi aşağıda."}
+ }
+}

@@ -282,7 +282,7 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
         yil = next((x for x in tercih if firma["sektor_anahtar"] in x["uygun"]), tercih[0])
         s = senaryo.yaz(tur, firma, gun, yil, web.SEKTOR_AD.get(bilgi["yanlis_sektor"], "başka bir sektör"))
         r = web.yap(firma, s, gun, yil, is_dir, cikti, bilgi)
-        ek = "Örnek görseller: Wikimedia Commons (CC BY / CC BY-SA), kaynakları sitemucidi.com.tr/gorsel-kaynaklari" if r.get("fotolar") else ""
+        ek = web.yama_kaynak(r["yama"]) if r.get("yama") else ("Örnek görseller: Wikimedia Commons (CC BY / CC BY-SA), kaynakları sitemucidi.com.tr/gorsel-kaynaklari" if r.get("fotolar") else "")
     sorun = kalite(cikti, r["sure"])
     if sorun:
         gunluk(f"{tur}: kalite denetimi geçmedi {sorun} → paylaşılmadı ({cikti})")

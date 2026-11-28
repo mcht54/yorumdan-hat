@@ -24,14 +24,47 @@ OZ_CIP = {"galeri": "Fotoğraf galerisi", "urunler": "Ürün kataloğu", "sss": 
           "hakkimizda": "Hakkımızda", "hizmetler": "Hizmetler"}
 
 
+YAMA_DOSYA = pathlib.Path(__file__).resolve().parent.parent / "icerik" / "sektor-yamalari.json"
+
+
+def yama_bul(firma: dict) -> tuple[str, dict] | None:
+    """Site Mucidi'de kalıbı olmayan sektör (ör. matbaa) → icerik/sektor-yamalari.json; fotoğraf yolları mutlak yapılır."""
+    metin = f"{firma.get('sektor', '')} {firma.get('firma', '')}".lower()
+    for ad, y in json.loads(YAMA_DOSYA.read_text()).items():
+        if ad.startswith("_") or not any(k in metin for k in y["anahtar"]):
+            continue
+        kok = YAMA_DOSYA.parent / "yama" / ad
+        yol = lambda f: str(kok / f) if f else f  # noqa: E731
+        y = json.loads(json.dumps(y))
+        for b in ("hero", "hakkimizda"):
+            for a in ("foto", "foto2"):
+                if y.get(b, {}).get(a): y[b][a] = yol(y[b][a])
+        for i in y.get("hizmetler", {}).get("items", []):
+            if i.get("foto"): i["foto"] = yol(i["foto"])
+        if y.get("galeri"): y["galeri"]["fotolar"] = [yol(f) for f in y["galeri"]["fotolar"]]
+        return ad, y
+    return None
+
+
+def yama_kaynak(ad: str) -> str:
+    k = json.loads((YAMA_DOSYA.parent / "yama" / ad / "kaynak.json").read_text())
+    return "Örnek fotoğraflar: Wikimedia Commons — " + "; ".join(f"{v['yazar']} ({v['lisans']})" for v in k.values())
+
+
 def site_uret(firma: dict, dizin: pathlib.Path, ek: dict | None = None) -> dict:
     dizin.mkdir(parents=True, exist_ok=True)
     g = {"firma": firma["firma"], "sektor_anahtar": firma["sektor_anahtar"], "sehir": firma.get("sehir", ""), "instagram": firma.get("kullanici", ""), **(ek or {})}
+    ym = yama_bul(firma)
+    if ym:  # kalıbın metni/görseli değil yamanınki; yalnız düzen tabandan
+        g["sektor_anahtar"], g["yama"] = ym[1]["taban"], ym[1]
+        gunluk(f"web: sektör yaması '{ym[0]}' uygulandı (taban {ym[1]['taban']})")
     (dizin / "girdi.json").write_text(json.dumps(g, ensure_ascii=False))
     r = subprocess.run(["npx", "tsx", "var/yorumdan/site-uret.ts", str(dizin / "girdi.json"), str(dizin)], cwd=SM, capture_output=True, text=True, timeout=300)
     if r.returncode:
         raise RuntimeError("site üretilemedi: " + r.stderr[-800:])
-    return json.loads((dizin / "bilgi.json").read_text())
+    b = json.loads((dizin / "bilgi.json").read_text())
+    b["yama"] = ym[0] if ym else None
+    return b
 
 
 def katmanlar(dizin: pathlib.Path) -> dict:
@@ -121,4 +154,4 @@ def yap(firma: dict, s: dict, gun: int, yildiz: dict, is_dir: pathlib.Path, cikt
            ("vuus", Z["K2"] - 0.05, .5), ("vuus", Z["I0"], .45), ("vurus", Z["O0"] + 0.9, .5), ("vuus", Z["CI"], .55), ("vurus", Z["H"], .55), ("vuus", C - 0.05, .5)]
     miks(ham, wav, sfx, SON, cikti, proje / "assets")
     gunluk(f"web bölümü hazır: {cikti} ({SON:.1f} sn, benzerlik {benz:.2f})")
-    return {"sure": SON, "benzerlik": benz, "Z": Z, "fotolar": bilgi.get("fotolar", []), "tema": bilgi["tema"], "varyant": varyant}
+    return {"sure": SON, "benzerlik": benz, "Z": Z, "fotolar": bilgi.get("fotolar", []), "tema": bilgi["tema"], "varyant": varyant, "yama": bilgi.get("yama")}
