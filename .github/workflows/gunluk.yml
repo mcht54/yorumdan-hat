@@ -30,7 +30,7 @@ jobs:
       group: yorumdan-durum      # aynı anda tek çalışma: durum deposunda çakışma olmasın (atlanan iş gruba girmez)
       cancel-in-progress: false
     runs-on: ubuntu-24.04
-    timeout-minutes: 60   # Kartvizitçi 3B render ekran kartı olmadan ~25 dk
+    timeout-minutes: 100  # Kartvizitçi 3B render ~25 dk; 2026-11-28 Siteci Abi: Gemini 503 + IG ProcessingFailed bekleyişi 60 dk sınırına takıldı
     env:
       YORUMDAN_SESSIZ: "1"          # açık depo: günlük satırları Actions kaydına yazılmaz, yalnız özel durum deposuna
       YORUMDAN_KAYNAK: "actions"
