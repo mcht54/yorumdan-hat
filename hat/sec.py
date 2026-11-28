@@ -35,7 +35,8 @@ Her yorum için JSON nesnesi döndür. Kurallar:
 - firma: yorumda geçen işletme adı (yazım düzeltmeden, düzgün büyük harfle). Yoksa "".
 - sektor: kısa Türkçe sektör adı (ör. "Dönerci", "Kuaför", "Oto lastik"). Yoksa "".
 - sehir: geçiyorsa il/ilçe, yoksa "".
-- sektor_anahtar: şu listeden en yakını: %s
+- sektor_anahtar: şu listeden AYNI İŞ KOLUNU yapan kalıp: %s
+  Listede gerçekten aynı işi yapan kalıp yoksa "yok" yaz; en yakın diye başka iş kolu SEÇME (matbaa ≠ tamirci, eczane ≠ klinik).
 - kendisi: yorumu yazan kişinin bu işletmenin sahibi/çalışanı olduğu anlaşılıyorsa true ("bizim", "dükkanımız", kullanıcı adı firma adına benziyor vb.).
 - uygun: false olmalı eğer: firma/sektör yoksa; ulusal/uluslararası büyük zincir ya da ünlü marka ise (Apple, Migros, THY vb.);
   kamu kurumu, siyasi parti, dernek kavgası; alkol, kumar, yetişkin, silah; başkasının işletmesiyle dalga geçme ya da kötüleme amacı;
@@ -62,8 +63,17 @@ def sec(hesap: str, yorumlar: list[dict], kendi_kullanici: str = "") -> dict | N
             a = cevap.get(y["id"])
             if not a or not a.get("uygun") or not a.get("firma") or not a.get("sektor"):
                 continue
-            if normal(a["firma"]) in kullanilan or a.get("sektor_anahtar") not in SEKTORLER:
+            if normal(a["firma"]) in kullanilan or a.get("sektor_anahtar") not in (*SEKTORLER, "yok"):
                 continue
+            if a.get("sektor_anahtar") == "yok":   # 2026-11-28: matbaa tamirci kalıbına düşmüştü → kalıp yoksa yama, yama da yoksa bu firma geçilir
+                from web import yama_bul
+                ym = yama_bul({"firma": a["firma"], "sektor": a["sektor"]})
+                if ym:
+                    a["sektor_anahtar"] = ym[1]["taban"]
+                elif hesap == "web":
+                    gunluk(f"{hesap}: {a['firma']} ({a['sektor']}) için Site Mucidi kalıbı ve sektör yaması yok → geçildi (yanlış sektör görseli olmasın)"); continue
+                else:
+                    a["sektor_anahtar"] = "kurumsal-firma"   # kartvizitte kalıp görseli yok; yalnız perdah önceliği için
             if uygunsuz(a["firma"], a.get("sektor", "")):
                 gunluk(f"{hesap}: uygunsuz firma/sektör elendi"); continue
             puan = int(y.get("like_count") or 0) + (2 if a.get("kendisi") else 0)
@@ -95,7 +105,7 @@ FIKIR_SISTEM = """Sen bir sosyal medya editörüsün. Kullanıcı (hesap sahibi)
 hatalı ya da Türkçe karaktersiz yazmış olabilir ("serdivandaki berbr ahmt abiye bayram kartı yap", "lokantaya sit yapsn"). Niyetini bir
 insan editör gibi anla. Kartvizit / web sitesi tasarlanacak firmayı çıkar; firma adı yazılmadıysa sektöre ve yere uygun, iddiasız, uydurma
 olduğu belli olmayan sade bir vitrin adı öner (ör. "Ahmet Usta Berber"). Bilmediğin bilgi (telefon, adres, fiyat) EKLEME.
-Sadece JSON: {"uygun": true, "neden": "", "firma": "...", "sektor": "kısa Türkçe sektör", "sehir": "", "sektor_anahtar": "<şu listeden: %s>",
+Sadece JSON: {"uygun": true, "neden": "", "firma": "...", "sektor": "kısa Türkçe sektör", "sehir": "", "sektor_anahtar": "<şu listeden aynı iş kolu, yoksa yok: %s>",
 "istek": "kullanıcının ne istediği, düzgün Türkçeyle tek cümle (tema, renk, özel gün, espri isteği dahil)"}
 uygun=false: siyaset, alkol/kumar/yetişkin, birine hakaret, büyük ulusal marka ya da tasarımla ilgisiz bir istek.""" % ", ".join(SEKTORLER)
 
@@ -110,6 +120,6 @@ def fikirden(metin: str) -> dict | None:
         return {"red": a.get("neden") or "Fikirden firma/sektör çıkarılamadı."}
     if any(k in normal(metin) for k in YASAK) or uygunsuz(metin, a.get("firma", ""), a.get("sektor", ""), a.get("istek", "")):
         return {"red": "Bu konu hesaplarda kullanılmıyor (argo, bahis/kumar, +18, alkol ya da benzeri)."}
-    sa = a.get("sektor_anahtar") if a.get("sektor_anahtar") in SEKTORLER else "yerel-hizmet"
+    sa = a.get("sektor_anahtar") if a.get("sektor_anahtar") in SEKTORLER else "yok"   # kalıp yoksa web.site_uret yama arar, yoksa durur
     return {"kaynak": "panel", "yorum_id": None, "kullanici": "", "yorum": a.get("istek") or metin, "begeni": 0, "firma": a["firma"],
             "sektor": a["sektor"], "sehir": a.get("sehir", ""), "sektor_anahtar": sa, "kendisi": False, "istek": a.get("istek") or metin}

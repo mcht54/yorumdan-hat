@@ -58,6 +58,8 @@ def site_uret(firma: dict, dizin: pathlib.Path, ek: dict | None = None) -> dict:
     if ym:  # kalıbın metni/görseli değil yamanınki; yalnız düzen tabandan
         g["sektor_anahtar"], g["yama"] = ym[1]["taban"], ym[1]
         gunluk(f"web: sektör yaması '{ym[0]}' uygulandı (taban {ym[1]['taban']})")
+    elif g["sektor_anahtar"] not in SEKTOR_AD:   # kalıp yok ve yama yok: yanlış sektör görselleriyle site üretme
+        raise RuntimeError(f"'{firma.get('sektor')}' için Site Mucidi kalıbı ve sektör yaması yok; icerik/sektor-yamalari.json'a ekle")
     (dizin / "girdi.json").write_text(json.dumps(g, ensure_ascii=False))
     r = subprocess.run(["npx", "tsx", "var/yorumdan/site-uret.ts", str(dizin / "girdi.json"), str(dizin)], cwd=SM, capture_output=True, text=True, timeout=300)
     if r.returncode:

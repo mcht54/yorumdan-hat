@@ -252,7 +252,12 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
     gun = len([k for k in kayit if platform_ayar.paylasildi(k) or deneme or not canli]) + 1
     medya, ylar = yorumlar.topla(tur, deneme=deneme or not Instagram(tur).hazir)
     firma, fikir_id = None, None
-    fk = None if deneme else panel.siradaki_fikir(tur)   # panelin "İçerik fikri" kutusu önceliklidir
+    # tek seferlik zorunlu firma (durum deposunda zorla-<tur>.json): hatalı bölüm silinip aynı firma/yorumla yeniden üretilecekse
+    zf = None if deneme else oku(f"zorla-{tur}.json", None)
+    if zf and zf.get("firma"):
+        firma = zf; yaz(f"zorla-{tur}.json", {})
+        gunluk(f"{tur}: günün firması zorunlu kayıttan → {firma['firma']} ({firma['sektor']})")
+    fk = None if (deneme or firma) else panel.siradaki_fikir(tur)   # panelin "İçerik fikri" kutusu önceliklidir
     if fk:
         f = sec.fikirden(fk[1]["metin"])
         if f and f.get("red"):
