@@ -10,6 +10,7 @@ import random
 import re
 
 import butce
+import strateji
 from guvenlik import uygunsuz
 from kartvizit import altyazilar, kelime_html
 from ortak import ICERIK, gunluk, json_sor, normal, oku
@@ -172,6 +173,7 @@ def denetle(s: dict, p: dict, oku_: dict) -> list[str]:
             for x in g:
                 if normal(oku_[x["kod"]]) not in normal(_duz(s["kalemler"][i])):
                     sorun.append(f"kalemler[{i}] '{oku_[x['kod']]}' ifadesini aynen içermeli ({x['ad']})")
+    sorun += strateji.acilis_sorunu(_duz(s.get("kanca")), *(s.get("teshis") or [])[:1])
     if not _duz(s.get("kanca")) or not _duz(s.get("sonuc")):
         sorun.append("kanca ve sonuc dolu tek cümle olmalı")
     if p["kalan"] > 0 and normal(oku_["kenara_yil"]) not in normal(_duz(s.get("sonuc"))):
@@ -209,8 +211,8 @@ Son bölümlerin esprileri (tekrar etme): {json.dumps(son, ensure_ascii=False)}
 BU BÖLÜMÜN KANCA TÜRÜ: {kanca_tur}
 {mizah_metni(mz)}
 Son bölümlerin kancaları (kalıbını da kelimelerini de TEKRAR ETME): {json.dumps(son_kanca, ensure_ascii=False)}
-Şu JSON şemasını doldur (yalnız JSON):
-{SEMA}"""
+{strateji.istem_eki([])}Şu JSON şemasını doldur (yalnız JSON):
+{strateji.sema_ekle(SEMA)}"""
     sistem = "Sen Cüzdan Hocası'sın: konuşan, neşeli, biraz telaşlı bir cüzdan. Kısa Reels anlatımı yazarsın. Kurallara harfiyen uy.\n\n" + kurallar()
     sorunlar = []
     for deneme in range(3):

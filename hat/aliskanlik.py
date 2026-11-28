@@ -8,6 +8,7 @@ import json
 import re
 
 import butce
+import strateji
 from guvenlik import uygunsuz
 from ortak import ICERIK, gunluk, json_sor, normal, oku
 
@@ -104,6 +105,7 @@ def denetle(s: dict, oku_: dict) -> list[str]:
     for y in YASAK:
         if y in metin.lower():
             sorun.append(f"yasak ifade: {y}")
+    sorun += strateji.acilis_sorunu(_duz(s.get("kanca")), *(s.get("teshis") or [])[:1])
     kal = s.get("kalemler") or []
     if len(kal) != 3:
         sorun.append("kalemler tam 3 cümle olmalı (aylık, yıllık, on yıllık)")
@@ -130,10 +132,10 @@ Alışkanlık: {a['ne']}. {tarif(a)}.
 Okunuşlar (HARFİ HARFİNE kullan, rakam yazma): {ETIKET[a['siklik']]} tutar '{oku_['bir_donem']}' ("dönem" kelimesini KULLANMA; "günde", "haftada", "ayda" de), aylık '{oku_['ay']}', yıllık '{oku_['yil']}', on yılda '{oku_['on_yil']}', yarıya indirirse yılda cebinde '{oku_['yarisi']}'.
 Ton: suçlama yok, "bırak" deme; "azalt, cebinde kalsın" de. Alışkanlığı küçümseme.
 Son bölümlerin kancaları (tekrar etme): {json.dumps(son, ensure_ascii=False)}
-{mizah_metni(mz)}
+{strateji.istem_eki([])}{mizah_metni(mz)}
 Bu formatta komik zemin: alışkanlığın masum görünmesi ile yıllık tutarın büyüklüğü arasındaki tezat (cüzdanın şaşkınlığı).
 Şu JSON şemasını doldur (yalnız JSON):
-{SEMA}"""
+{strateji.sema_ekle(SEMA)}"""
     sistem = "Sen Cüzdan Hocası'sın: konuşan, neşeli bir cüzdan. Kısa Reels anlatımı yazarsın. Kurallara harfiyen uy.\n\n" + kurallar()
     sorunlar = []
     for _ in range(3):

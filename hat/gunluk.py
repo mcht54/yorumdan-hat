@@ -320,6 +320,7 @@ def bolum(tur: str, deneme: bool, bicim: str = "butce") -> dict | None:
         sec.kullanildi(firma["firma"])
     if s.get("_mizah"):
         mz = oku(f"{tur}-son-mizah.json", []); mz.append(s["_mizah"]); yaz(f"{tur}-son-mizah.json", mz[-10:])
+    kc = oku(f"{tur}-son-kancalar.json", []); kc.append(str(s.get("kanca") or "")[:140]); yaz(f"{tur}-son-kancalar.json", kc[-20:])  # içerik stratejisti kural 7
     es = oku(f"{tur}-son-espriler.json", []); es.append(" | ".join(x for x in (s.get("tanitim"), *(s.get("font") or s.get("kapak") or [])[1:2], *(s.get("perdah") or s.get("ozellik") or [])[1:2]) if x)); yaz(f"{tur}-son-espriler.json", es[-20:])
     return kayit_satir
 

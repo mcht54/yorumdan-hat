@@ -8,6 +8,7 @@ import json
 import re
 
 import butce
+import strateji
 import para
 from ortak import ICERIK, gunluk, json_sor, normal, oku
 
@@ -74,6 +75,7 @@ def denetle(s: dict, o: dict, pa: dict, pb: dict) -> list[str]:
     for y in para.YASAK + ["fakir", "zavallı", "ezik"]:
         if y in metin.lower():
             sorun.append(f"yasak ifade: {y}")
+    sorun += strateji.acilis_sorunu(para._duz(s.get("kanca")), *(s.get("teshis") or [])[:1])
     kal = s.get("kalemler") or []
     if len(kal) != 3:
         sorun.append("kalemler tam 3 cümle olmalı")
@@ -102,9 +104,9 @@ B: {_etiket(b)} · {para.ozet(b)} · durum {pb['durum']} · yıllık kenara '{o[
 Maaş okunuşları: A '{o['a_maas']}', B '{o['b_maas']}'. Kenara 0 ise o kişi için açığı söyle. Okunuşları HARFİ HARFİNE kullan, rakam yazma.
 Kimseyi küçümseme; asgari ücretliyle dalga geçme. Mesaj: bütçe yöntemi maaştan önemli.
 Son kancalar (tekrar etme): {json.dumps(oku('para-son-kancalar.json', [])[-8:], ensure_ascii=False)}
-{para.mizah_metni(mz)}
+{strateji.istem_eki([])}{para.mizah_metni(mz)}
 Şu JSON şemasını doldur (yalnız JSON):
-{SEMA}"""
+{strateji.sema_ekle(SEMA)}"""
     sistem = "Sen Cüzdan Hocası'sın: iki bütçeyi hakem gibi karşılaştıran neşeli bir cüzdan. Kurallara harfiyen uy.\n\n" + para.kurallar()
     sorunlar = []
     for _ in range(3):

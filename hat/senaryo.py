@@ -6,6 +6,7 @@ import json
 import random
 import re
 
+import strateji
 from ortak import ICERIK, gunluk, json_sor, oku
 
 KAPANIS = {
@@ -109,6 +110,7 @@ def denetle(tur: str, s: dict) -> list[str]:
         sorun.append("rakam var (sayılar yazıyla)")
     if re.search(YASAK_KALIP, metin.lower()):
         sorun.append("'X değil Y sanılırdı' kalıbı yasak (son bölümlerde aşırı tekrarlandı); başka espri mekanizması kullan")
+    sorun += strateji.acilis_sorunu(s.get("kanca"), s.get("tanitim"))
     if metin.count("!") > 7:
         sorun.append("çok ünlem")
     for v in (["font", "renk", "perdah", "arka", "maket"] if tur == "kartvizit" else ["kapak", "icerik", "ozellik"]):
@@ -135,8 +137,8 @@ BU BÖLÜMÜN MİZAH TÜRLERİ (sınır değil; esprileri bu türlere dağıt, a
 3. {MIZAH[mz[2]]}
 {firma.get('_radar') or ''}
 Son bölümlerde kullanılan espriler (konusu da kalıbı da tekrar etmesin): {json.dumps(ornek, ensure_ascii=False)}
-Şu JSON şemasını doldur (yalnız JSON):
-{SEMA[tur]}"""
+{strateji.istem_eki(oku(f"{tur}-son-kancalar.json", []))}Şu JSON şemasını doldur (yalnız JSON):
+{strateji.sema_ekle(SEMA[tur])}"""
     kim = "Sen Siteci Abi'sin: sıcak, esprili, esnaf dostu bir Türk web tasarımcısı-anlatıcı." if tur == "web" else "Sen sıcak, esprili bir Türk tasarımcı-anlatıcısın."
     sistem = kim + " Kısa Reels anlatımı yazarsın. Aşağıdaki kurallara harfiyen uy.\n\n" + kurallar()
     for deneme in range(2):
